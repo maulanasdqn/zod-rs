@@ -1,0 +1,48 @@
+[package]
+name = "zod-rs"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "TypeScript Zod-inspired schema validation library for Rust with static type inference"
+keywords.workspace = true
+categories.workspace = true
+readme = "../README.md"
+documentation = "https://docs.rs/zod-rs"
+homepage = "https://github.com/maulanasdqn/zod-rs"
+
+[dependencies]
+zod-rs-util = { version = "0.1.0", path = "../zod-rs-util" }
+zod-rs-macros = { version = "0.1.0", path = "../zod-rs-macros", optional = true }
+serde.workspace = true
+serde_json.workspace = true
+regex = "1.0"
+axum = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true }
+tower = { workspace = true, optional = true }
+
+[features]
+default = ["macros"]
+axum = ["dep:axum", "dep:tokio", "dep:tower"]
+macros = ["dep:zod-rs-macros"]
+
+[[example]]
+name = "basic_usage"
+path = "../examples/basic_usage.rs"
+
+[[example]]
+name = "struct_validation"
+path = "../examples/struct_validation.rs"
+
+[[example]]
+name = "axum_usage"
+path = "../examples/axum_usage.rs"
+
+[[example]]
+name = "derive_schema"
+path = "../examples/derive_schema.rs"
+
+[[example]]
+name = "validator_replacement"
+path = "../examples/validator_replacement.rs"

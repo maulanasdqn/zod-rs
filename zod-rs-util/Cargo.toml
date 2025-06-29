@@ -1,0 +1,21 @@
+[package]
+name = "zod-rs-util"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Utility functions and error handling for zod-rs schema validation"
+keywords.workspace = true
+categories.workspace = true
+readme = "../README.md"
+documentation = "https://docs.rs/zod-rs-util"
+homepage = "https://github.com/maulanasdqn/zod-rs"
+
+[dependencies]
+thiserror.workspace = true
+serde = { workspace = true, optional = true }
+
+[features]
+default = []
+serde = ["dep:serde"]

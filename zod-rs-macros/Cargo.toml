@@ -1,0 +1,22 @@
+[package]
+name = "zod-rs-macros"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Procedural macros for zod-rs schema to struct inference and validation"
+keywords.workspace = true
+categories.workspace = true
+readme = "../README.md"
+documentation = "https://docs.rs/zod-rs-macros"
+homepage = "https://github.com/maulanasdqn/zod-rs"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2.workspace = true
+quote.workspace = true
+syn.workspace = true
+serde.workspace = true 
