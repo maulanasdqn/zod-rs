@@ -1,5 +1,8 @@
 # 🦀 zod-rs
 
+![image](https://github.com/user-attachments/assets/033617ef-3b7d-4c03-87e5-b082f98a26d5)
+
+
 🦀 **A Rust implementation inspired by Zod for schema validation**
 
 [![Crates.io](https://img.shields.io/crates/v/zod-rs.svg)](https://crates.io/crates/zod-rs)
