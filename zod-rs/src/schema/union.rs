@@ -23,11 +23,20 @@ where
 
     pub fn variant<S>(mut self, schema: S) -> Self
     where
-        S: Schema<T> + Send + Sync + 'static,
+        S: Schema<T> + Send + Sync + Debug + 'static,
         T: Debug,
     {
         self.schemas.push(Box::new(schema));
         self
+    }
+}
+
+impl<T> Default for UnionSchema<T>
+where
+    T: Debug,
+{
+    fn default() -> Self {
+        Self::new()
     }
 }
 

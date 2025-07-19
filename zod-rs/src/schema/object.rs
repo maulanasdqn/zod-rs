@@ -47,6 +47,12 @@ impl ObjectSchema {
     }
 }
 
+impl Default for ObjectSchema {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 trait ObjectFieldValidator: Send + Sync + Debug {
     fn validate_field(&self, value: Option<&Value>) -> ValidateResult<Value>;
     fn is_optional(&self) -> bool;

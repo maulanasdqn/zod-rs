@@ -11,6 +11,12 @@ impl BooleanSchema {
     }
 }
 
+impl Default for BooleanSchema {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Schema<bool> for BooleanSchema {
     fn validate(&self, value: &Value) -> ValidateResult<bool> {
         match value.as_bool() {

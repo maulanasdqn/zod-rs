@@ -3,7 +3,7 @@ use serde_json::Value;
 use std::fmt::Debug;
 use zod_rs_util::{ValidateResult, ValidationError, ValidationResult};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ArraySchema<S, T> {
     element_schema: S,
     min_length: Option<usize>,
