@@ -1,8 +1,9 @@
 use crate::schema::{value_type_name, Schema};
 use serde_json::Value;
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Debug};
 use zod_rs_util::{ValidateResult, ValidationError, ValidationResult};
 
+#[derive(Debug)]
 pub struct ObjectSchema {
     fields: HashMap<String, Box<dyn ObjectFieldValidator>>,
     strict: bool,
@@ -18,8 +19,8 @@ impl ObjectSchema {
 
     pub fn field<S, T>(mut self, name: &str, schema: S) -> Self
     where
-        S: Schema<T> + Send + Sync + 'static,
-        T: serde::Serialize + Send + Sync + 'static,
+        S: Schema<T> + Send + Sync + Debug + 'static,
+        T: serde::Serialize + Send + Sync + Debug + 'static,
     {
         self.fields.insert(
             name.to_string(),
@@ -30,8 +31,8 @@ impl ObjectSchema {
 
     pub fn optional_field<S, T>(mut self, name: &str, schema: S) -> Self
     where
-        S: Schema<T> + Send + Sync + 'static,
-        T: serde::Serialize + Send + Sync + 'static,
+        S: Schema<T> + Send + Sync + Debug + 'static,
+        T: serde::Serialize + Send + Sync + Debug + 'static,
     {
         self.fields.insert(
             name.to_string(),
@@ -46,7 +47,7 @@ impl ObjectSchema {
     }
 }
 
-trait ObjectFieldValidator: Send + Sync {
+trait ObjectFieldValidator: Send + Sync + Debug {
     fn validate_field(&self, value: Option<&Value>) -> ValidateResult<Value>;
     fn is_optional(&self) -> bool;
 }
@@ -68,8 +69,8 @@ impl<S, T> RequiredFieldValidator<S, T> {
 
 impl<S, T> ObjectFieldValidator for RequiredFieldValidator<S, T>
 where
-    S: Schema<T> + Send + Sync,
-    T: serde::Serialize + Send + Sync,
+    S: Schema<T> + Send + Sync + Debug,
+    T: serde::Serialize + Send + Sync + Debug,
 {
     fn validate_field(&self, value: Option<&Value>) -> ValidateResult<Value> {
         match value {
@@ -103,8 +104,8 @@ impl<S, T> OptionalFieldValidator<S, T> {
 
 impl<S, T> ObjectFieldValidator for OptionalFieldValidator<S, T>
 where
-    S: Schema<T> + Send + Sync,
-    T: serde::Serialize + Send + Sync,
+    S: Schema<T> + Send + Sync + Debug,
+    T: serde::Serialize + Send + Sync + Debug,
 {
     fn validate_field(&self, value: Option<&Value>) -> ValidateResult<Value> {
         match value {

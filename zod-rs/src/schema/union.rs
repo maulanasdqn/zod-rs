@@ -1,12 +1,20 @@
 use crate::schema::Schema;
 use serde_json::Value;
+use std::fmt::Debug;
 use zod_rs_util::{ValidateResult, ValidationError};
 
-pub struct UnionSchema<T> {
+#[derive(Debug)]
+pub struct UnionSchema<T>
+where
+    T: Debug,
+{
     schemas: Vec<Box<dyn Schema<T> + Send + Sync>>,
 }
 
-impl<T> UnionSchema<T> {
+impl<T> UnionSchema<T>
+where
+    T: Debug,
+{
     pub fn new() -> Self {
         Self {
             schemas: Vec::new(),
@@ -16,13 +24,17 @@ impl<T> UnionSchema<T> {
     pub fn variant<S>(mut self, schema: S) -> Self
     where
         S: Schema<T> + Send + Sync + 'static,
+        T: Debug,
     {
         self.schemas.push(Box::new(schema));
         self
     }
 }
 
-impl<T> Schema<T> for UnionSchema<T> {
+impl<T> Schema<T> for UnionSchema<T>
+where
+    T: Debug,
+{
     fn validate(&self, value: &Value) -> ValidateResult<T> {
         for schema in &self.schemas {
             if let Ok(result) = schema.validate(value) {
@@ -33,7 +45,10 @@ impl<T> Schema<T> for UnionSchema<T> {
     }
 }
 
-pub fn union<T>() -> UnionSchema<T> {
+pub fn union<T>() -> UnionSchema<T>
+where
+    T: Debug,
+{
     UnionSchema::new()
 }
 

@@ -1,7 +1,6 @@
+use crate::schema::{value_type_name, Schema};
 use serde_json::Value;
 use zod_rs_util::{ValidateResult, ValidationError};
-
-use crate::schema::{value_type_name, Schema};
 
 #[derive(Debug, Clone)]
 pub struct BooleanSchema;

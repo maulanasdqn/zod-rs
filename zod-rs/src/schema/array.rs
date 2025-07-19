@@ -1,5 +1,6 @@
 use crate::schema::{value_type_name, Schema};
 use serde_json::Value;
+use std::fmt::Debug;
 use zod_rs_util::{ValidateResult, ValidationError, ValidationResult};
 
 #[derive(Debug)]
@@ -38,6 +39,7 @@ impl<S, T> ArraySchema<S, T> {
 impl<S, T> Schema<Vec<T>> for ArraySchema<S, T>
 where
     S: Schema<T>,
+    T: Debug,
 {
     fn validate(&self, value: &Value) -> ValidateResult<Vec<T>> {
         let array = match value.as_array() {

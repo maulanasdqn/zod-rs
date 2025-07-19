@@ -1,7 +1,7 @@
-use serde_json::Value;
-use zod_rs_util::ValidateResult;
-
 use crate::schema::Schema;
+use serde_json::Value;
+use std::fmt::Debug;
+use zod_rs_util::ValidateResult;
 
 #[derive(Debug)]
 pub struct OptionalSchema<S, T> {
@@ -21,6 +21,7 @@ impl<S, T> OptionalSchema<S, T> {
 impl<S, T> Schema<Option<T>> for OptionalSchema<S, T>
 where
     S: Schema<T>,
+    T: Debug,
 {
     fn validate(&self, value: &Value) -> ValidateResult<Option<T>> {
         if value.is_null() {
