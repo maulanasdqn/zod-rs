@@ -38,6 +38,7 @@ path = "../examples/struct_validation.rs"
 [[example]]
 name = "axum_usage"
 path = "../examples/axum_usage.rs"
+required-features = ["axum"]
 
 [[example]]
 name = "derive_schema"

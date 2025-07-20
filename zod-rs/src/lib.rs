@@ -1,5 +1,7 @@
 mod schema;
 
+pub use schema::*;
+
 pub mod prelude {
     pub use crate::schema::{
         array, boolean, literal, number, object, optional, string, union, ArraySchema,
