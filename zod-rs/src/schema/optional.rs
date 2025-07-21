@@ -3,7 +3,7 @@ use serde_json::Value;
 use std::fmt::Debug;
 use zod_rs_util::ValidateResult;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct OptionalSchema<S, T> {
     inner: S,
     _phantom: std::marker::PhantomData<T>,

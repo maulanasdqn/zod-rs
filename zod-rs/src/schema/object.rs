@@ -1,11 +1,11 @@
 use crate::schema::{value_type_name, Schema};
 use serde_json::Value;
-use std::{collections::HashMap, fmt::Debug};
+use std::{collections::HashMap, fmt::Debug, sync::Arc};
 use zod_rs_util::{ValidateResult, ValidationError, ValidationResult};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ObjectSchema {
-    fields: HashMap<String, Box<dyn ObjectFieldValidator>>,
+    fields: HashMap<String, Arc<dyn ObjectFieldValidator>>,
     strict: bool,
 }
 
@@ -19,24 +19,24 @@ impl ObjectSchema {
 
     pub fn field<S, T>(mut self, name: &str, schema: S) -> Self
     where
-        S: Schema<T> + Send + Sync + Debug + 'static,
+        S: Schema<T> + Send + Sync + 'static,
         T: serde::Serialize + Send + Sync + Debug + 'static,
     {
         self.fields.insert(
             name.to_string(),
-            Box::new(RequiredFieldValidator::new(schema)),
+            Arc::new(RequiredFieldValidator::new(schema)),
         );
         self
     }
 
     pub fn optional_field<S, T>(mut self, name: &str, schema: S) -> Self
     where
-        S: Schema<T> + Send + Sync + Debug + 'static,
+        S: Schema<T> + Send + Sync + 'static,
         T: serde::Serialize + Send + Sync + Debug + 'static,
     {
         self.fields.insert(
             name.to_string(),
-            Box::new(OptionalFieldValidator::new(schema)),
+            Arc::new(OptionalFieldValidator::new(schema)),
         );
         self
     }
@@ -197,6 +197,27 @@ mod tests {
             .field("age", number().min(0.0))
             .optional_field("email", string().email());
 
+        let schema_strict = schema.clone().strict();
+
+        let schema_with_username = schema.clone().field("username", string().min(3));
+
+        assert!(schema_with_username
+            .validate(&json!({
+                "name": "John",
+                "age": 25,
+                "email": "john@example.com",
+                "username":"j.doe"
+            }))
+            .is_ok());
+
+        assert!(schema_with_username
+            .validate(&json!({
+                "name": "John",
+                "age": 25,
+                "email": "john@example.com",
+            }))
+            .is_err());
+
         assert!(schema
             .validate(&json!({
                 "name": "John",
@@ -204,6 +225,15 @@ mod tests {
                 "email": "john@example.com"
             }))
             .is_ok());
+
+        assert!(schema_strict
+            .validate(&json!({
+                "name": "John",
+                "age": 25,
+                "email": "john@example.com",
+                "username":"j.doe"
+            }))
+            .is_err());
 
         assert!(schema
             .validate(&json!({

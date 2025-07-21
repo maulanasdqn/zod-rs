@@ -1,14 +1,14 @@
 use crate::schema::Schema;
 use serde_json::Value;
-use std::fmt::Debug;
+use std::{fmt::Debug, sync::Arc};
 use zod_rs_util::{ValidateResult, ValidationError};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnionSchema<T>
 where
     T: Debug,
 {
-    schemas: Vec<Box<dyn Schema<T> + Send + Sync>>,
+    schemas: Vec<Arc<dyn Schema<T> + Send + Sync>>,
 }
 
 impl<T> UnionSchema<T>
@@ -26,7 +26,7 @@ where
         S: Schema<T> + Send + Sync + Debug + 'static,
         T: Debug,
     {
-        self.schemas.push(Box::new(schema));
+        self.schemas.push(Arc::new(schema));
         self
     }
 }
