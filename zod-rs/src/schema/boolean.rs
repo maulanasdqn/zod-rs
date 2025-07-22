@@ -1,7 +1,6 @@
+use crate::schema::{value_type_name, Schema};
 use serde_json::Value;
 use zod_rs_util::{ValidateResult, ValidationError};
-
-use crate::schema::{value_type_name, Schema};
 
 #[derive(Debug, Clone)]
 pub struct BooleanSchema;
@@ -9,6 +8,12 @@ pub struct BooleanSchema;
 impl BooleanSchema {
     pub fn new() -> Self {
         Self
+    }
+}
+
+impl Default for BooleanSchema {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

@@ -1,9 +1,8 @@
+use crate::schema::{value_type_name, Schema};
 use serde_json::Value;
 use zod_rs_util::{ValidateResult, ValidationError};
 
-use crate::schema::{value_type_name, Schema};
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StringSchema {
     min_length: Option<usize>,
     max_length: Option<usize>,
@@ -50,6 +49,12 @@ impl StringSchema {
     pub fn url(mut self) -> Self {
         self.url = true;
         self
+    }
+}
+
+impl Default for StringSchema {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

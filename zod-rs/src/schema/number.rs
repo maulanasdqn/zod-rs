@@ -1,9 +1,8 @@
+use crate::schema::{value_type_name, Schema};
 use serde_json::Value;
 use zod_rs_util::{ValidateResult, ValidationError};
 
-use crate::schema::{value_type_name, Schema};
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NumberSchema {
     min: Option<f64>,
     max: Option<f64>,
@@ -67,6 +66,12 @@ impl NumberSchema {
     pub fn finite(mut self) -> Self {
         self.finite = true;
         self
+    }
+}
+
+impl Default for NumberSchema {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

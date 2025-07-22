@@ -1,10 +1,11 @@
 use crate::schema::{value_type_name, Schema};
 use serde_json::Value;
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Debug, sync::Arc};
 use zod_rs_util::{ValidateResult, ValidationError, ValidationResult};
 
+#[derive(Debug, Clone)]
 pub struct ObjectSchema {
-    fields: HashMap<String, Box<dyn ObjectFieldValidator>>,
+    fields: HashMap<String, Arc<dyn ObjectFieldValidator>>,
     strict: bool,
 }
 
@@ -19,11 +20,11 @@ impl ObjectSchema {
     pub fn field<S, T>(mut self, name: &str, schema: S) -> Self
     where
         S: Schema<T> + Send + Sync + 'static,
-        T: serde::Serialize + Send + Sync + 'static,
+        T: serde::Serialize + Send + Sync + Debug + 'static,
     {
         self.fields.insert(
             name.to_string(),
-            Box::new(RequiredFieldValidator::new(schema)),
+            Arc::new(RequiredFieldValidator::new(schema)),
         );
         self
     }
@@ -31,11 +32,11 @@ impl ObjectSchema {
     pub fn optional_field<S, T>(mut self, name: &str, schema: S) -> Self
     where
         S: Schema<T> + Send + Sync + 'static,
-        T: serde::Serialize + Send + Sync + 'static,
+        T: serde::Serialize + Send + Sync + Debug + 'static,
     {
         self.fields.insert(
             name.to_string(),
-            Box::new(OptionalFieldValidator::new(schema)),
+            Arc::new(OptionalFieldValidator::new(schema)),
         );
         self
     }
@@ -46,7 +47,13 @@ impl ObjectSchema {
     }
 }
 
-trait ObjectFieldValidator: Send + Sync {
+impl Default for ObjectSchema {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+trait ObjectFieldValidator: Send + Sync + Debug {
     fn validate_field(&self, value: Option<&Value>) -> ValidateResult<Value>;
     fn is_optional(&self) -> bool;
 }
@@ -68,8 +75,8 @@ impl<S, T> RequiredFieldValidator<S, T> {
 
 impl<S, T> ObjectFieldValidator for RequiredFieldValidator<S, T>
 where
-    S: Schema<T> + Send + Sync,
-    T: serde::Serialize + Send + Sync,
+    S: Schema<T> + Send + Sync + Debug,
+    T: serde::Serialize + Send + Sync + Debug,
 {
     fn validate_field(&self, value: Option<&Value>) -> ValidateResult<Value> {
         match value {
@@ -103,8 +110,8 @@ impl<S, T> OptionalFieldValidator<S, T> {
 
 impl<S, T> ObjectFieldValidator for OptionalFieldValidator<S, T>
 where
-    S: Schema<T> + Send + Sync,
-    T: serde::Serialize + Send + Sync,
+    S: Schema<T> + Send + Sync + Debug,
+    T: serde::Serialize + Send + Sync + Debug,
 {
     fn validate_field(&self, value: Option<&Value>) -> ValidateResult<Value> {
         match value {
@@ -190,6 +197,27 @@ mod tests {
             .field("age", number().min(0.0))
             .optional_field("email", string().email());
 
+        let schema_strict = schema.clone().strict();
+
+        let schema_with_username = schema.clone().field("username", string().min(3));
+
+        assert!(schema_with_username
+            .validate(&json!({
+                "name": "John",
+                "age": 25,
+                "email": "john@example.com",
+                "username":"j.doe"
+            }))
+            .is_ok());
+
+        assert!(schema_with_username
+            .validate(&json!({
+                "name": "John",
+                "age": 25,
+                "email": "john@example.com",
+            }))
+            .is_err());
+
         assert!(schema
             .validate(&json!({
                 "name": "John",
@@ -197,6 +225,15 @@ mod tests {
                 "email": "john@example.com"
             }))
             .is_ok());
+
+        assert!(schema_strict
+            .validate(&json!({
+                "name": "John",
+                "age": 25,
+                "email": "john@example.com",
+                "username":"j.doe"
+            }))
+            .is_err());
 
         assert!(schema
             .validate(&json!({
