@@ -1,6 +1,7 @@
 mod schema;
 
 pub use schema::*;
+pub use zod_rs_util::locales;
 
 pub mod prelude {
     pub use crate::schema::{

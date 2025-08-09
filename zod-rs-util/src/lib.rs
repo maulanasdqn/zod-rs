@@ -1,14 +1,22 @@
 pub mod error;
+pub mod locales;
 
-pub use error::{ValidateResult, ValidationError, ValidationIssue, ValidationResult};
-
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+pub use error::{
+    issue::ValidationIssue, result::ValidateResult, result::ValidationResult, ValidationError,
+};
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
+    use crate::{
+        error::{ValidationFormat, ValidationOrigin, ValidationType},
+        locales::Locale,
+    };
+
+    fn add(left: u64, right: u64) -> u64 {
+        left + right
+    }
 
     #[test]
     fn it_works() {
@@ -21,10 +29,10 @@ mod tests {
         let error = ValidationError::required();
         assert_eq!(error.to_string(), "Value is required but was not provided");
 
-        let error = ValidationError::invalid_type("string", "number");
+        let error = ValidationError::invalid_type(ValidationType::String, ValidationType::Number);
         assert_eq!(
             error.to_string(),
-            "Invalid type: expected string, got number"
+            "Invalid input: expected string, received number"
         );
     }
 
@@ -49,7 +57,7 @@ mod tests {
 
         assert_eq!(
             issue.to_string(),
-            "at user.name: Value is required but was not provided"
+            "user.name: Value is required but was not provided"
         );
     }
 
@@ -58,16 +66,36 @@ mod tests {
         let mut result = ValidationResult::new();
         result.add_error_at_path(
             vec!["user".to_string(), "email".to_string()],
-            ValidationError::invalid_format("invalid email format".to_string()),
+            ValidationError::invalid_format(ValidationFormat::custom("email"), None),
         );
         result.add_error_at_path(
             vec!["user".to_string(), "age".to_string()],
-            ValidationError::too_small("15".to_string(), "18".to_string()),
+            ValidationError::too_small(ValidationOrigin::Number, "15", true),
         );
 
         let display = result.to_string();
-        assert!(display.contains("Validation failed with 2 error(s):"));
-        assert!(display.contains("at user.email: Invalid format: invalid email format"));
-        assert!(display.contains("at user.age: Value '15' is too small: minimum is 18"));
+
+        assert!(display.contains("user.email: Invalid email address"));
+        assert!(display.contains("user.age: Too small: expected number to have >= 15"));
+    }
+
+    #[test]
+
+    fn test_validation_result_display_ar() {
+        let mut result = ValidationResult::new();
+
+        result.add_error_at_path(
+            vec!["user".to_string(), "email".to_string()],
+            ValidationError::invalid_format(ValidationFormat::custom("email"), None),
+        );
+        result.add_error_at_path(
+            vec!["user".to_string(), "age".to_string()],
+            ValidationError::too_small(ValidationOrigin::Number, "15", true),
+        );
+
+        let display = result.local(Locale::Ar);
+
+        assert!(display.contains("user.email: بريد إلكتروني غير مقبول"));
+        assert!(display.contains("user.age: أصغر من اللازم: يفترض لـ number أن يكون >= 15"));
     }
 }

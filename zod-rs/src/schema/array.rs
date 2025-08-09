@@ -1,7 +1,10 @@
-use crate::schema::{value_type_name, Schema};
+use crate::schema::Schema;
 use serde_json::Value;
 use std::fmt::Debug;
-use zod_rs_util::{ValidateResult, ValidationError, ValidationResult};
+use zod_rs_util::{
+    error::{ValidationOrigin, ValidationType},
+    ValidateResult, ValidationError, ValidationResult,
+};
 
 #[derive(Debug, Clone)]
 pub struct ArraySchema<S, T> {
@@ -45,15 +48,20 @@ where
         let array = match value.as_array() {
             Some(arr) => arr,
             None => {
-                return Err(ValidationError::invalid_type("array", value_type_name(value)).into());
+                return Err(ValidationError::invalid_type(
+                    ValidationType::Array,
+                    ValidationType::from(value),
+                )
+                .into());
             }
         };
 
         if let Some(min) = self.min_length {
             if array.len() < min {
-                return Err(ValidationError::invalid_length(
-                    array.len(),
-                    format!("minimum length is {}", min),
+                return Err(ValidationError::too_small(
+                    ValidationOrigin::Array,
+                    min.to_string(),
+                    true,
                 )
                 .into());
             }
@@ -61,9 +69,10 @@ where
 
         if let Some(max) = self.max_length {
             if array.len() > max {
-                return Err(ValidationError::invalid_length(
-                    array.len(),
-                    format!("maximum length is {}", max),
+                return Err(ValidationError::too_big(
+                    ValidationOrigin::Array,
+                    max.to_string(),
+                    true,
                 )
                 .into());
             }

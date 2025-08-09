@@ -81,8 +81,8 @@ fn main() {
     });
 
     match User::validate_and_parse(&valid_user_json) {
-        Ok(user) => println!("✅ Valid user: {:#?}", user),
-        Err(e) => println!("❌ Invalid user: {}", e),
+        Ok(user) => println!("✅ Valid user: {user:#?}"),
+        Err(e) => println!("❌ Invalid user: {e}"),
     }
 
     let invalid_user_json = json!({
@@ -95,8 +95,8 @@ fn main() {
     });
 
     match User::validate_and_parse(&invalid_user_json) {
-        Ok(user) => println!("✅ Valid user: {:#?}", user),
-        Err(e) => println!("❌ Invalid user: {}", e),
+        Ok(user) => println!("✅ Valid user: {user:#?}"),
+        Err(e) => println!("❌ Invalid user: {e}"),
     }
 
     println!("\n🛍️ Product Validation:");
@@ -111,8 +111,8 @@ fn main() {
     });
 
     match Product::validate_and_parse(&valid_product_json) {
-        Ok(product) => println!("✅ Valid product: {:#?}", product),
-        Err(e) => println!("❌ Invalid product: {}", e),
+        Ok(product) => println!("✅ Valid product: {product:#?}"),
+        Err(e) => println!("❌ Invalid product: {e}"),
     }
 
     println!("\n📄 Post Creation Validation:");
@@ -127,8 +127,8 @@ fn main() {
     });
 
     match CreatePostRequest::validate_and_parse(&valid_post_json) {
-        Ok(post) => println!("✅ Valid post request: {:#?}", post),
-        Err(e) => println!("❌ Invalid post request: {}", e),
+        Ok(post) => println!("✅ Valid post request: {post:#?}"),
+        Err(e) => println!("❌ Invalid post request: {e}"),
     }
 
     let invalid_post_json = json!({
@@ -140,8 +140,8 @@ fn main() {
     });
 
     match CreatePostRequest::validate_and_parse(&invalid_post_json) {
-        Ok(post) => println!("✅ Valid post request: {:#?}", post),
-        Err(e) => println!("❌ Invalid post request: {}", e),
+        Ok(post) => println!("✅ Valid post request: {post:#?}"),
+        Err(e) => println!("❌ Invalid post request: {e}"),
     }
 
     println!("\n🔍 Schema Inspection:");
@@ -159,7 +159,7 @@ fn main() {
 
     match user_schema.validate(&test_data) {
         Ok(_) => println!("✅ Schema validation passed"),
-        Err(e) => println!("❌ Schema validation failed: {}", e),
+        Err(e) => println!("❌ Schema validation failed: {e}"),
     }
 
     println!("\n📊 JSON String Validation:");
@@ -174,8 +174,8 @@ fn main() {
     }"#;
 
     match User::from_json(json_string) {
-        Ok(user) => println!("✅ Valid user from JSON string: {:#?}", user),
-        Err(e) => println!("❌ Invalid JSON: {}", e),
+        Ok(user) => println!("✅ Valid user from JSON string: {user:#?}"),
+        Err(e) => println!("❌ Invalid JSON: {e}"),
     }
 
     println!("\n🚀 Performance Comparison:");

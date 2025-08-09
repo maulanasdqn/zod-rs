@@ -1,6 +1,9 @@
-use crate::schema::{value_type_name, Schema};
+use crate::schema::Schema;
 use serde_json::Value;
-use zod_rs_util::{ValidateResult, ValidationError};
+use zod_rs_util::{
+    error::{ValidationFormat, ValidationOrigin, ValidationType},
+    ValidateResult, ValidationError,
+};
 
 #[derive(Debug, Clone)]
 pub struct StringSchema {
@@ -63,15 +66,20 @@ impl Schema<String> for StringSchema {
         let string_val = match value.as_str() {
             Some(s) => s.to_string(),
             None => {
-                return Err(ValidationError::invalid_type("string", value_type_name(value)).into());
+                return Err(ValidationError::invalid_type(
+                    ValidationType::String,
+                    ValidationType::from(value),
+                )
+                .into());
             }
         };
 
         if let Some(min) = self.min_length {
             if string_val.len() < min {
-                return Err(ValidationError::invalid_length(
-                    string_val.len(),
-                    format!("minimum length is {}", min),
+                return Err(ValidationError::too_small(
+                    ValidationOrigin::String,
+                    min.to_string(),
+                    true,
                 )
                 .into());
             }
@@ -79,9 +87,10 @@ impl Schema<String> for StringSchema {
 
         if let Some(max) = self.max_length {
             if string_val.len() > max {
-                return Err(ValidationError::invalid_length(
-                    string_val.len(),
-                    format!("maximum length is {}", max),
+                return Err(ValidationError::too_big(
+                    ValidationOrigin::String,
+                    max.to_string(),
+                    true,
                 )
                 .into());
             }
@@ -89,16 +98,24 @@ impl Schema<String> for StringSchema {
 
         if let Some(pattern) = &self.pattern {
             if !pattern.is_match(&string_val) {
-                return Err(ValidationError::pattern_mismatch(pattern.as_str()).into());
+                return Err(ValidationError::invalid_format(
+                    ValidationFormat::Regex,
+                    Some(pattern.to_string()),
+                )
+                .into());
             }
         }
 
         if self.email && !is_valid_email(&string_val) {
-            return Err(ValidationError::invalid_format("invalid email format").into());
+            return Err(
+                ValidationError::invalid_format(ValidationFormat::custom("email"), None).into(),
+            );
         }
 
         if self.url && !is_valid_url(&string_val) {
-            return Err(ValidationError::invalid_format("invalid URL format").into());
+            return Err(
+                ValidationError::invalid_format(ValidationFormat::custom("url"), None).into(),
+            );
         }
 
         Ok(string_val)

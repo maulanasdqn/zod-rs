@@ -1,7 +1,7 @@
-use crate::schema::{value_type_name, Schema};
+use crate::schema::Schema;
 use serde_json::Value;
 use std::{collections::HashMap, fmt::Debug, sync::Arc};
-use zod_rs_util::{ValidateResult, ValidationError, ValidationResult};
+use zod_rs_util::{error::ValidationType, ValidateResult, ValidationError, ValidationResult};
 
 #[derive(Debug, Clone)]
 pub struct ObjectSchema {
@@ -84,7 +84,15 @@ where
                 let validated = self.schema.validate(v)?;
                 Ok(serde_json::to_value(validated).unwrap())
             }
-            None => Err(ValidationError::required().into()),
+            None => {
+                let err = match self.schema.validation_type() {
+                    Some(val_type) => {
+                        ValidationError::invalid_type(val_type, ValidationType::Undefined)
+                    }
+                    None => ValidationError::required(),
+                };
+                Err(err.into())
+            }
         }
     }
 
@@ -133,7 +141,11 @@ impl Schema<Value> for ObjectSchema {
         let obj = match value.as_object() {
             Some(o) => o,
             None => {
-                return Err(ValidationError::invalid_type("object", value_type_name(value)).into());
+                return Err(ValidationError::invalid_type(
+                    ValidationType::Object,
+                    ValidationType::from(value),
+                )
+                .into());
             }
         };
 
@@ -156,13 +168,19 @@ impl Schema<Value> for ObjectSchema {
         }
 
         if self.strict {
+            let mut unrecognized_keys = vec![];
+
             for key in obj.keys() {
                 if !self.fields.contains_key(key) {
-                    validation_result.add_error_at_path(
-                        vec![key.clone()],
-                        ValidationError::custom(format!("Unknown field '{}'", key)),
-                    );
+                    unrecognized_keys.push(key.clone());
                 }
+            }
+
+            if !unrecognized_keys.is_empty() {
+                validation_result.add_error_at_path(
+                    vec![],
+                    ValidationError::unrecognized_keys(unrecognized_keys),
+                );
             }
         } else {
             for (key, value) in obj {

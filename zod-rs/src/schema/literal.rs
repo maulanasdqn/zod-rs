@@ -1,6 +1,6 @@
-use crate::schema::{value_type_name, Schema};
+use crate::schema::Schema;
 use serde_json::Value;
-use zod_rs_util::{ValidateResult, ValidationError};
+use zod_rs_util::{error::ValidationType, ValidateResult, ValidationError};
 
 #[derive(Debug, Clone)]
 pub struct LiteralSchema<T: Clone + PartialEq + std::fmt::Debug> {
@@ -17,12 +17,12 @@ impl Schema<String> for LiteralSchema<String> {
     fn validate(&self, value: &Value) -> ValidateResult<String> {
         match value.as_str() {
             Some(s) if s == self.expected => Ok(s.to_string()),
-            Some(s) => Err(ValidationError::custom(format!(
-                "Expected '{}', got '{}'",
-                self.expected, s
-            ))
+            Some(_) => Err(ValidationError::invalid_value(&self.expected).into()),
+            None => Err(ValidationError::invalid_type(
+                ValidationType::String,
+                ValidationType::from(value),
+            )
             .into()),
-            None => Err(ValidationError::invalid_type("string", value_type_name(value)).into()),
         }
     }
 }
@@ -31,12 +31,12 @@ impl Schema<f64> for LiteralSchema<f64> {
     fn validate(&self, value: &Value) -> ValidateResult<f64> {
         match value.as_f64() {
             Some(n) if (n - self.expected).abs() < f64::EPSILON => Ok(n),
-            Some(n) => Err(ValidationError::custom(format!(
-                "Expected {}, got {}",
-                self.expected, n
-            ))
+            Some(_) => Err(ValidationError::invalid_value(self.expected.to_string()).into()),
+            None => Err(ValidationError::invalid_type(
+                ValidationType::Number,
+                ValidationType::from(value),
+            )
             .into()),
-            None => Err(ValidationError::invalid_type("number", value_type_name(value)).into()),
         }
     }
 }
