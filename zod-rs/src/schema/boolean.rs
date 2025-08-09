@@ -1,6 +1,6 @@
-use crate::schema::{value_type_name, Schema};
+use crate::schema::Schema;
 use serde_json::Value;
-use zod_rs_util::{ValidateResult, ValidationError};
+use zod_rs_util::{error::ValidationType, ValidateResult, ValidationError};
 
 #[derive(Debug, Clone)]
 pub struct BooleanSchema;
@@ -21,7 +21,11 @@ impl Schema<bool> for BooleanSchema {
     fn validate(&self, value: &Value) -> ValidateResult<bool> {
         match value.as_bool() {
             Some(b) => Ok(b),
-            None => Err(ValidationError::invalid_type("boolean", value_type_name(value)).into()),
+            None => Err(ValidationError::invalid_type(
+                ValidationType::Bool,
+                ValidationType::from(value),
+            )
+            .into()),
         }
     }
 }

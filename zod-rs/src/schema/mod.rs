@@ -18,18 +18,22 @@ pub use union::*;
 
 use serde_json::Value;
 use std::fmt::Debug;
-use zod_rs_util::ValidateResult;
+use zod_rs_util::{error::ValidationType, ValidateResult};
 
 pub trait Schema<T>: Debug
 where
     T: std::fmt::Debug,
 {
+    fn validation_type(&self) -> Option<ValidationType> {
+        None
+    }
+
     fn validate(&self, value: &Value) -> ValidateResult<T>;
 
     fn parse(&self, value: &Value) -> T {
         match self.validate(value) {
             Ok(result) => result,
-            Err(errors) => panic!("Validation failed: {}", errors),
+            Err(errors) => panic!("Validation failed: {errors}"),
         }
     }
 
@@ -49,16 +53,5 @@ where
         Self: Sized,
     {
         ArraySchema::new(self)
-    }
-}
-
-pub fn value_type_name(value: &Value) -> &'static str {
-    match value {
-        Value::Null => "null",
-        Value::Bool(_) => "boolean",
-        Value::Number(_) => "number",
-        Value::String(_) => "string",
-        Value::Array(_) => "array",
-        Value::Object(_) => "object",
     }
 }

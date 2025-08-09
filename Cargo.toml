@@ -1,10 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-    "zod-rs",
-    "zod-rs-util",
-    "zod-rs-macros",
-]
+members = ["zod-rs", "zod-rs-util", "zod-rs-macros"]
 
 [workspace.package]
 version = "0.1.0"

@@ -94,7 +94,7 @@ where
     match schema.validate(data) {
         Ok(_) => match serde_json::from_value::<T>(data.clone()) {
             Ok(result) => Ok(result),
-            Err(e) => Err(format!("Deserialization failed: {}", e)),
+            Err(e) => Err(format!("Deserialization failed: {e}")),
         },
         Err(validation_result) => {
             let errors: Vec<String> = validation_result
@@ -130,8 +130,8 @@ fn main() {
     });
 
     match validate_and_deserialize::<UserProfile>(create_user_schema(), &valid_user_data) {
-        Ok(user) => println!("✅ Valid user profile: {:#?}", user),
-        Err(e) => println!("❌ Invalid user profile: {}", e),
+        Ok(user) => println!("✅ Valid user profile: {user:#?}"),
+        Err(e) => println!("❌ Invalid user profile: {e}"),
     }
 
     let invalid_user_data = json!({
@@ -148,8 +148,8 @@ fn main() {
     });
 
     match validate_and_deserialize::<UserProfile>(create_user_schema(), &invalid_user_data) {
-        Ok(user) => println!("✅ Valid user profile: {:#?}", user),
-        Err(e) => println!("❌ Invalid user profile: {}", e),
+        Ok(user) => println!("✅ Valid user profile: {user:#?}"),
+        Err(e) => println!("❌ Invalid user profile: {e}"),
     }
 
     println!("\n🛍️ Product Validation:");
@@ -162,8 +162,8 @@ fn main() {
     });
 
     match validate_and_deserialize::<Product>(create_product_schema(), &valid_product_data) {
-        Ok(product) => println!("✅ Valid product: {:#?}", product),
-        Err(e) => println!("❌ Invalid product: {}", e),
+        Ok(product) => println!("✅ Valid product: {product:#?}"),
+        Err(e) => println!("❌ Invalid product: {e}"),
     }
 
     println!("\n📄 Post Creation Validation:");
@@ -175,8 +175,8 @@ fn main() {
     });
 
     match validate_and_deserialize::<CreatePostRequest>(create_post_schema(), &valid_post_data) {
-        Ok(post) => println!("✅ Valid post request: {:#?}", post),
-        Err(e) => println!("❌ Invalid post request: {}", e),
+        Ok(post) => println!("✅ Valid post request: {post:#?}"),
+        Err(e) => println!("❌ Invalid post request: {e}"),
     }
 
     let invalid_post_data = json!({
@@ -187,8 +187,8 @@ fn main() {
     });
 
     match validate_and_deserialize::<CreatePostRequest>(create_post_schema(), &invalid_post_data) {
-        Ok(post) => println!("✅ Valid post request: {:#?}", post),
-        Err(e) => println!("❌ Invalid post request: {}", e),
+        Ok(post) => println!("✅ Valid post request: {post:#?}"),
+        Err(e) => println!("❌ Invalid post request: {e}"),
     }
 
     println!("\n🧪 Individual Field Validation:");
@@ -203,8 +203,8 @@ fn main() {
 
     for email in test_emails {
         match email_schema.safe_parse(&json!(email)) {
-            Ok(valid_email) => println!("✅ Valid email: {}", valid_email),
-            Err(_) => println!("❌ Invalid email: {}", email),
+            Ok(valid_email) => println!("✅ Valid email: {valid_email}"),
+            Err(_) => println!("❌ Invalid email: {email}"),
         }
     }
 
@@ -214,8 +214,8 @@ fn main() {
 
     for age in test_ages {
         match age_schema.safe_parse(&json!(age)) {
-            Ok(valid_age) => println!("✅ Valid age: {}", valid_age),
-            Err(_) => println!("❌ Invalid age: {}", age),
+            Ok(valid_age) => println!("✅ Valid age: {valid_age}"),
+            Err(_) => println!("❌ Invalid age: {age}"),
         }
     }
 
@@ -230,8 +230,8 @@ fn main() {
 
     for tags in test_tag_arrays {
         match tags_schema.safe_parse(&tags) {
-            Ok(valid_tags) => println!("✅ Valid tags: {:?}", valid_tags),
-            Err(_) => println!("❌ Invalid tags: {}", tags),
+            Ok(valid_tags) => println!("✅ Valid tags: {valid_tags:?}"),
+            Err(_) => println!("❌ Invalid tags: {tags}"),
         }
     }
 

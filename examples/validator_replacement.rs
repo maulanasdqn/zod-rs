@@ -136,8 +136,8 @@ fn validate_signup_example() {
     });
 
     match SignupRequest::validate_and_parse(&valid_signup) {
-        Ok(signup) => println!("✅ Valid signup: {:#?}", signup),
-        Err(e) => println!("❌ Invalid signup: {}", e),
+        Ok(signup) => println!("✅ Valid signup: {signup:#?}"),
+        Err(e) => println!("❌ Invalid signup: {e}"),
     }
 
     let invalid_signup = json!({
@@ -152,8 +152,8 @@ fn validate_signup_example() {
     });
 
     match SignupRequest::validate_and_parse(&invalid_signup) {
-        Ok(signup) => println!("✅ Valid signup: {:#?}", signup),
-        Err(e) => println!("❌ Invalid signup: {}", e),
+        Ok(signup) => println!("✅ Valid signup: {signup:#?}"),
+        Err(e) => println!("❌ Invalid signup: {e}"),
     }
 }
 
@@ -173,8 +173,8 @@ fn validate_product_example() {
     });
 
     match ProductCreateRequest::validate_and_parse(&valid_product) {
-        Ok(product) => println!("✅ Valid product: {:#?}", product),
-        Err(e) => println!("❌ Invalid product: {}", e),
+        Ok(product) => println!("✅ Valid product: {product:#?}"),
+        Err(e) => println!("❌ Invalid product: {e}"),
     }
 
     let invalid_product = json!({
@@ -189,8 +189,8 @@ fn validate_product_example() {
     });
 
     match ProductCreateRequest::validate_and_parse(&invalid_product) {
-        Ok(product) => println!("✅ Valid product: {:#?}", product),
-        Err(e) => println!("❌ Invalid product: {}", e),
+        Ok(product) => println!("✅ Valid product: {product:#?}"),
+        Err(e) => println!("❌ Invalid product: {e}"),
     }
 }
 
@@ -223,8 +223,8 @@ fn validate_nested_structure_example() {
     });
 
     match UserProfile::validate_and_parse(&valid_profile) {
-        Ok(profile) => println!("✅ Valid profile: {:#?}", profile),
-        Err(e) => println!("❌ Invalid profile: {}", e),
+        Ok(profile) => println!("✅ Valid profile: {profile:#?}"),
+        Err(e) => println!("❌ Invalid profile: {e}"),
     }
 
     let invalid_profile = json!({
@@ -253,8 +253,8 @@ fn validate_nested_structure_example() {
     });
 
     match UserProfile::validate_and_parse(&invalid_profile) {
-        Ok(profile) => println!("✅ Valid profile: {:#?}", profile),
-        Err(e) => println!("❌ Invalid profile: {}", e),
+        Ok(profile) => println!("✅ Valid profile: {profile:#?}"),
+        Err(e) => println!("❌ Invalid profile: {e}"),
     }
 }
 
@@ -328,7 +328,7 @@ fn schema_reuse_example() {
 
     match signup_schema.validate(&test_signup_data) {
         Ok(_) => println!("✅ Signup schema validation passed"),
-        Err(e) => println!("❌ Signup schema validation failed: {}", e),
+        Err(e) => println!("❌ Signup schema validation failed: {e}"),
     }
 
     let test_product_data = json!({
@@ -343,7 +343,7 @@ fn schema_reuse_example() {
 
     match product_schema.validate(&test_product_data) {
         Ok(_) => println!("✅ Product schema validation passed"),
-        Err(e) => println!("❌ Product schema validation failed: {}", e),
+        Err(e) => println!("❌ Product schema validation failed: {e}"),
     }
 }
 
