@@ -47,3 +47,7 @@ path = "../examples/derive_schema.rs"
 [[example]]
 name = "validator_replacement"
 path = "../examples/validator_replacement.rs"
+
+[[example]]
+name = "i18n"
+path = "../examples/i18n_usage.rs"

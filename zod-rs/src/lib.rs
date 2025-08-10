@@ -1,7 +1,7 @@
 mod schema;
 
 pub use schema::*;
-pub use zod_rs_util::locales;
+pub use zod_rs_util::Locale;
 
 pub mod prelude {
     pub use crate::schema::{
@@ -12,4 +12,5 @@ pub mod prelude {
     pub use serde_json::Value;
     #[cfg(feature = "macros")]
     pub use zod_rs_macros::ZodSchema;
+    pub use zod_rs_util::Locale;
 }

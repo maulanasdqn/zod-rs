@@ -18,16 +18,12 @@ pub use union::*;
 
 use serde_json::Value;
 use std::fmt::Debug;
-use zod_rs_util::{error::ValidationType, ValidateResult};
+use zod_rs_util::ValidateResult;
 
 pub trait Schema<T>: Debug
 where
     T: std::fmt::Debug,
 {
-    fn validation_type(&self) -> Option<ValidationType> {
-        None
-    }
-
     fn validate(&self, value: &Value) -> ValidateResult<T>;
 
     fn parse(&self, value: &Value) -> T {

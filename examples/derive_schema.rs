@@ -3,6 +3,15 @@ use serde_json::json;
 use zod_rs::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize, ZodSchema)]
+struct LoginWorkDomainRequest {
+    #[zod(email, ends_with("@work_domain.com"))]
+    email: String,
+
+    #[zod(min_length(8))]
+    password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, ZodSchema)]
 struct User {
     #[zod(min_length(2), max_length(50), regex(r"^[a-zA-Z0-9_]+$"))]
     username: String,
@@ -62,6 +71,24 @@ struct CreatePostRequest {
 
     #[zod(url)]
     featured_image: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, ZodSchema)]
+struct Phone {
+    #[zod(length(2))]
+    alpha_code: String,
+
+    #[zod(starts_with("+"))]
+    code: String,
+
+    #[zod(min_length(3))]
+    country: String,
+
+    #[zod(regex(r"^\d+$"))]
+    number: String,
+
+    #[zod(starts_with("+"), includes("-"))]
+    full_number: String,
 }
 
 fn main() {
@@ -304,5 +331,56 @@ mod tests {
         });
 
         assert!(User::validate_and_parse(&data_with_optionals).is_ok());
+    }
+
+    #[test]
+    fn test_work_domain() {
+        let vaild_login = json!({
+            "email": "test@work_domain.com",
+            "password": "TestPass123",
+
+        });
+
+        assert!(LoginWorkDomainRequest::validate_and_parse(&vaild_login).is_ok());
+
+        let invaild_login = json!({
+            "email": "test@hotmail.com",
+            "password": "TestPass123",
+        });
+
+        assert!(LoginWorkDomainRequest::validate_and_parse(&invaild_login).is_err());
+    }
+
+    #[test]
+    fn test_phone_dto() {
+        let vaild_phone_dto = json!({
+            "alpha_code": "JP",
+            "country": "Japan",
+            "code": "+81",
+            "number": "9012345678",
+            "full_number": "+81-9012345678"
+        });
+
+        assert!(Phone::validate_and_parse(&vaild_phone_dto).is_ok());
+
+        let invaild_phone_dto_code_full_number = json!({
+            "alpha_code": "JP",
+            "country": "Japan",
+            "code": "0081",
+            "number": "9012345678",
+            "full_number": "00819012345678"
+        });
+
+        assert!(Phone::validate_and_parse(&invaild_phone_dto_code_full_number).is_err());
+
+        let invaild_phone_dto_full_number = json!({
+            "alpha_code": "JP",
+            "country": "Japan",
+            "code": "+81",
+            "number": "9012345678",
+            "full_number": "81-9012345678"
+        });
+
+        assert!(Phone::validate_and_parse(&invaild_phone_dto_full_number).is_err());
     }
 }

@@ -2,8 +2,7 @@ use crate::schema::Schema;
 use serde_json::Value;
 use std::fmt::Debug;
 use zod_rs_util::{
-    error::{ValidationOrigin, ValidationType},
-    ValidateResult, ValidationError, ValidationResult,
+    ValidateResult, ValidationError, ValidationOrigin, ValidationResult, ValidationType,
 };
 
 #[derive(Debug, Clone)]

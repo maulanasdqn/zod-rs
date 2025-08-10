@@ -1,8 +1,7 @@
 use crate::schema::Schema;
 use serde_json::Value;
 use zod_rs_util::{
-    error::{ValidationOrigin, ValidationType},
-    ValidateResult, ValidationError,
+    NumberConstraint, ValidateResult, ValidationError, ValidationOrigin, ValidationType,
 };
 
 #[derive(Debug, Clone)]
@@ -100,7 +99,7 @@ impl Schema<f64> for NumberSchema {
         }
 
         if self.finite && !num.is_finite() {
-            return Err(ValidationError::custom("number must be finite").into());
+            return Err(ValidationError::invalid_number(NumberConstraint::Finite).into());
         }
 
         if let Some(min) = self.min {
@@ -126,19 +125,19 @@ impl Schema<f64> for NumberSchema {
         }
 
         if self.positive && num <= 0.0 {
-            return Err(ValidationError::custom("number must be positive").into());
+            return Err(ValidationError::invalid_number(NumberConstraint::Positive).into());
         }
 
         if self.negative && num >= 0.0 {
-            return Err(ValidationError::custom("number must be negative").into());
+            return Err(ValidationError::invalid_number(NumberConstraint::Negative).into());
         }
 
         if self.nonnegative && num < 0.0 {
-            return Err(ValidationError::custom("number must be non-negative").into());
+            return Err(ValidationError::invalid_number(NumberConstraint::NonNegative).into());
         }
 
         if self.nonpositive && num > 0.0 {
-            return Err(ValidationError::custom("number must be non-positive").into());
+            return Err(ValidationError::invalid_number(NumberConstraint::NonPositive).into());
         }
 
         Ok(num)

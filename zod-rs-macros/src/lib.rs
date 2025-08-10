@@ -68,6 +68,9 @@ struct ZodAttributes {
     length: Option<usize>,
     min_length: Option<usize>,
     max_length: Option<usize>,
+    starts_with: Option<String>,
+    ends_with: Option<String>,
+    includes: Option<String>,
     email: bool,
     url: bool,
     regex: Option<String>,
@@ -137,6 +140,56 @@ fn parse_zod_attributes(attrs: &[Attribute]) -> ZodAttributes {
                                     if let Ok(value) = value_str.parse::<f64>() {
                                         zod_attrs.max = Some(value);
                                     }
+                                }
+                                i += 1;
+                            }
+                        }
+                        "starts_with" => {
+                            if i + 1 < tokens.len() {
+                                let value_token = tokens[i + 1].to_string();
+                                if let Some(value) = extract_string_from_parens(&value_token) {
+                                    // Remove quotes if present
+                                    let starts_with_value =
+                                        if value.starts_with('"') && value.ends_with('"') {
+                                            value[1..value.len() - 1].to_string()
+                                        } else {
+                                            value
+                                        };
+                                    zod_attrs.starts_with = Some(starts_with_value);
+                                }
+                                i += 1;
+                            }
+                        }
+                        "ends_with" => {
+                            if i + 1 < tokens.len() {
+                                let value_token = tokens[i + 1].to_string();
+                                if let Some(value) = extract_string_from_parens(&value_token) {
+                                    // Remove quotes if present
+                                    let ends_with_value =
+                                        if value.starts_with('"') && value.ends_with('"') {
+                                            value[1..value.len() - 1].to_string()
+                                        } else {
+                                            value
+                                        };
+
+                                    zod_attrs.ends_with = Some(ends_with_value);
+                                }
+                                i += 1;
+                            }
+                        }
+                        "includes" => {
+                            if i + 1 < tokens.len() {
+                                let value_token = tokens[i + 1].to_string();
+                                if let Some(value) = extract_string_from_parens(&value_token) {
+                                    // Remove quotes if present
+                                    let includes_value =
+                                        if value.starts_with('"') && value.ends_with('"') {
+                                            value[1..value.len() - 1].to_string()
+                                        } else {
+                                            value
+                                        };
+
+                                    zod_attrs.includes = Some(includes_value);
                                 }
                                 i += 1;
                             }
@@ -265,6 +318,15 @@ fn generate_base_validation_with_attrs(
                     }
                     if let Some(regex) = &zod_attrs.regex {
                         validation = quote! { #validation.regex(#regex) };
+                    }
+                    if let Some(starts_with) = &zod_attrs.starts_with {
+                        validation = quote! { #validation.starts_with(#starts_with) };
+                    }
+                    if let Some(ends_with) = &zod_attrs.ends_with {
+                        validation = quote! { #validation.ends_with(#ends_with) };
+                    }
+                    if let Some(includes) = &zod_attrs.includes {
+                        validation = quote! { #validation.includes(#includes) };
                     }
 
                     validation

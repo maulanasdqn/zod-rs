@@ -1,16 +1,19 @@
-pub mod error;
-pub mod locales;
+mod error;
+mod locales;
 
 pub use error::{
-    issue::ValidationIssue, result::ValidateResult, result::ValidationResult, ValidationError,
+    issue::ValidationIssue,
+    result::{ValidateResult, ValidationResult},
+    NumberConstraint, StringFormat, ValidationError, ValidationOrigin, ValidationType,
 };
+pub use locales::*;
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
     use crate::{
-        error::{ValidationFormat, ValidationOrigin, ValidationType},
+        error::{StringFormat, ValidationOrigin, ValidationType},
         locales::Locale,
     };
 
@@ -66,7 +69,7 @@ mod tests {
         let mut result = ValidationResult::new();
         result.add_error_at_path(
             vec!["user".to_string(), "email".to_string()],
-            ValidationError::invalid_format(ValidationFormat::custom("email"), None),
+            ValidationError::invalid_format(StringFormat::custom("email"), None),
         );
         result.add_error_at_path(
             vec!["user".to_string(), "age".to_string()],
@@ -80,13 +83,12 @@ mod tests {
     }
 
     #[test]
-
     fn test_validation_result_display_ar() {
         let mut result = ValidationResult::new();
 
         result.add_error_at_path(
             vec!["user".to_string(), "email".to_string()],
-            ValidationError::invalid_format(ValidationFormat::custom("email"), None),
+            ValidationError::invalid_format(StringFormat::custom("email"), None),
         );
         result.add_error_at_path(
             vec!["user".to_string(), "age".to_string()],

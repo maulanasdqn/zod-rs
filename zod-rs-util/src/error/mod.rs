@@ -1,12 +1,11 @@
 pub mod issue;
 pub mod result;
 
-use serde_json::Value;
-
 use crate::{
     locales::{localizer, Locale},
     ValidationIssue,
 };
+use serde_json::Value;
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -33,23 +32,17 @@ pub enum ValidationError {
         inclusive: bool,
     },
     InvalidFormat {
-        format: ValidationFormat,
+        format: StringFormat,
         detail: Option<String>,
     },
-    NotMultipleOf {
-        divisor: usize,
+    InvalidNumber {
+        constraint: NumberConstraint,
     },
     UnrecognizedKeys {
         keys: Vec<String>,
     },
-    InvalidKey {
-        origin: ValidationOrigin,
-    },
     InvalidUnion {
         issues: Vec<ValidationIssue>,
-    },
-    InvalidElement {
-        origin: ValidationOrigin,
     },
     Custom {
         message: String,
@@ -108,28 +101,20 @@ impl ValidationError {
         }
     }
 
-    pub fn invalid_format(format: ValidationFormat, detail: Option<String>) -> Self {
+    pub fn invalid_format(format: StringFormat, detail: Option<String>) -> Self {
         Self::InvalidFormat { format, detail }
     }
 
-    pub fn not_multiple_of(divisor: usize) -> Self {
-        Self::NotMultipleOf { divisor }
+    pub fn invalid_number(constraint: NumberConstraint) -> Self {
+        Self::InvalidNumber { constraint }
     }
 
     pub fn unrecognized_keys(keys: Vec<String>) -> Self {
         Self::UnrecognizedKeys { keys }
     }
 
-    pub fn invalid_key(origin: ValidationOrigin) -> Self {
-        Self::InvalidKey { origin }
-    }
-
     pub fn invalid_union(issues: Vec<ValidationIssue>) -> Self {
         Self::InvalidUnion { issues }
-    }
-
-    pub fn invalid_element(origin: ValidationOrigin) -> Self {
-        Self::InvalidElement { origin }
     }
 
     pub fn custom(message: impl Into<String>) -> Self {
@@ -142,9 +127,7 @@ impl ValidationError {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ValidationOrigin {
     String,
-    File,
     Array,
-    Set,
     Number,
 }
 
@@ -152,9 +135,7 @@ impl fmt::Display for ValidationOrigin {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let value = match self {
             ValidationOrigin::String => "string",
-            ValidationOrigin::File => "file",
             ValidationOrigin::Array => "array",
-            ValidationOrigin::Set => "set",
             ValidationOrigin::Number => "number",
         };
 
@@ -213,7 +194,7 @@ impl fmt::Display for ValidationType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ValidationFormat {
+pub enum StringFormat {
     StartsWith,
     EndsWith,
     Includes,
@@ -221,8 +202,17 @@ pub enum ValidationFormat {
     Custom(String),
 }
 
-impl ValidationFormat {
+impl StringFormat {
     pub fn custom(val_type: impl Into<String>) -> Self {
         Self::Custom(val_type.into())
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum NumberConstraint {
+    Finite,
+    Positive,
+    Negative,
+    NonNegative,
+    NonPositive,
 }

@@ -1,7 +1,7 @@
 use crate::schema::Schema;
 use serde_json::Value;
 use std::{collections::HashMap, fmt::Debug, sync::Arc};
-use zod_rs_util::{error::ValidationType, ValidateResult, ValidationError, ValidationResult};
+use zod_rs_util::{ValidateResult, ValidationError, ValidationResult, ValidationType};
 
 #[derive(Debug, Clone)]
 pub struct ObjectSchema {
@@ -84,15 +84,7 @@ where
                 let validated = self.schema.validate(v)?;
                 Ok(serde_json::to_value(validated).unwrap())
             }
-            None => {
-                let err = match self.schema.validation_type() {
-                    Some(val_type) => {
-                        ValidationError::invalid_type(val_type, ValidationType::Undefined)
-                    }
-                    None => ValidationError::required(),
-                };
-                Err(err.into())
-            }
+            None => Err(ValidationError::required().into()),
         }
     }
 
