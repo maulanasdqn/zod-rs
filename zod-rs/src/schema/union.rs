@@ -45,12 +45,18 @@ where
     T: Debug,
 {
     fn validate(&self, value: &Value) -> ValidateResult<T> {
+        let mut issues = vec![];
+
         for schema in &self.schemas {
-            if let Ok(result) = schema.validate(value) {
-                return Ok(result);
+            match schema.validate(value) {
+                Ok(result) => return Ok(result),
+                Err(error) => {
+                    issues.extend(error.issues);
+                }
             }
         }
-        Err(ValidationError::union_mismatch().into())
+
+        Err(ValidationError::invalid_union(issues).into())
     }
 }
 

@@ -29,7 +29,7 @@ where
     fn parse(&self, value: &Value) -> T {
         match self.validate(value) {
             Ok(result) => result,
-            Err(errors) => panic!("Validation failed: {}", errors),
+            Err(errors) => panic!("Validation failed: {errors}"),
         }
     }
 
@@ -49,16 +49,5 @@ where
         Self: Sized,
     {
         ArraySchema::new(self)
-    }
-}
-
-pub fn value_type_name(value: &Value) -> &'static str {
-    match value {
-        Value::Null => "null",
-        Value::Bool(_) => "boolean",
-        Value::Number(_) => "number",
-        Value::String(_) => "string",
-        Value::Array(_) => "array",
-        Value::Object(_) => "object",
     }
 }

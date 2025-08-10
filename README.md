@@ -2,7 +2,6 @@
 
 ![image](https://github.com/user-attachments/assets/033617ef-3b7d-4c03-87e5-b082f98a26d5)
 
-
 🦀 **A Rust implementation inspired by Zod for schema validation**
 
 [![Crates.io](https://img.shields.io/crates/v/zod-rs.svg)](https://crates.io/crates/zod-rs)
@@ -23,6 +22,7 @@ zod-rs is a TypeScript-first schema validation library with static type inferenc
 - 🔄 **Schema inference** - Automatically generate schemas from Rust structs
 - 🏷️ **Attribute macros** - Rich validation constraints via `#[zod(...)]` attributes
 - 🔧 **Validator replacement** - Drop-in replacement for the `validator` crate
+- 🌐 **Internationalization (i18n)** — Localized error messages and validation feedback
 
 ## 📦 Installation
 
@@ -482,9 +482,8 @@ match schema.safe_parse(&invalid_data) {
     Err(errors) => {
         println!("{}", errors);
         // Output:
-        // Validation failed with 2 error(s):
-        //   - at user.name: String length 1 is invalid: minimum length is 2
-        //   - at user.email: Invalid format: invalid email format
+        //   - user.name: Too big: expected string to have >= 2 characters
+        //   - user.email: Invalid email address
     }
     _ => {}
 }
@@ -494,11 +493,48 @@ match schema.safe_parse(&invalid_data) {
 
 - `ValidationError::Required` - Missing required field
 - `ValidationError::InvalidType` - Wrong data type
-- `ValidationError::TooSmall` / `TooBig` - Number out of range
-- `ValidationError::InvalidLength` - String/array length issues
-- `ValidationError::InvalidFormat` - Format validation (email, URL)
-- `ValidationError::PatternMismatch` - Regex pattern mismatch
+- `ValidationError::InvalidValue` - Provided value does not match the expected value
+- `ValidationError::InvalidValues` - Provided value does not match any of the expected values.
+- `ValidationError::TooSmall` / `TooBig` - Value or lenght out of range (String, Number, Array ... etc)
+- `ValidationError::InvalidFormat` - String format validation (starts with , ends with, includes, regex, ... etc)
+- `ValidationError::InvalidNumber` - Invalid number constraint (finite, positive, ... etc)
+- `ValidationError::UnrecognizedKeys` - Object with unrecognized keys
+- `ValidationError::InvalidUnion` - No union matching
 - `ValidationError::Custom` - Custom validation errors
+
+## 🌐 Internationalization (i18n)
+
+zod-rs comes with built-in locale support so you can get validation errors in different languages.
+
+### Currently supported
+
+- English (default)
+- Arabic
+
+Example
+
+```rust
+use serde_json::json;
+use zod_rs::prelude::*;
+
+let login_schema = object()
+    .field("email", string().ends_with("@domain.com"))
+    .field("password", string().min(8))
+    .strict();
+
+let input = json!({
+    "email": "john@example.com",
+    "password": "Strongpassword123"
+});
+
+match login_schema.safe_parse(&input) {
+    Ok(output) => println!("✅ Valid login: {output}"),
+    Err(err) => println!("{}", err.local(Locale::Ar)),
+}
+```
+
+💡 Want to add a new language? Missing a translation?
+Open an issue or PR on GitHub — contributions are welcome.
 
 ## 🔧 Advanced Usage
 
@@ -564,6 +600,9 @@ The `#[zod(...)]` attribute supports the following constraints:
 
 - `min_length(n)` - Minimum string length
 - `max_length(n)` - Maximum string length
+- `starts_with("value")` - String starts with a given value
+- `ends_with("value")` - String ends with a given value
+- `includes("value")` - String includes a given value
 - `length(n)` - Exact string length
 - `email` - Email format validation
 - `url` - URL format validation
@@ -709,7 +748,7 @@ cargo run --example axum_usage --features axum
 This project uses a Cargo workspace with the following crates:
 
 - **`zod-rs`** - Main validation library with schema types
-- **`zod-rs-util`** - Utility functions and error handling
+- **`zod-rs-util`** - Utility functions, error handling and i18n
 
 ## 🤝 Contributing
 
@@ -727,8 +766,8 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 This project is licensed under either of
 
-- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
 
@@ -747,18 +786,19 @@ at your option.
 
 zod-rs provides significant advantages over the traditional `validator` crate:
 
-| Feature                   | zod-rs                           | validator crate             |
-| ------------------------- | -------------------------------- | --------------------------- |
-| **Schema Definition**     | Derive macro with attributes     | Struct attributes only      |
-| **Runtime Flexibility**   | Dynamic schema creation          | Compile-time only           |
-| **Error Messages**        | Detailed with full path context  | Basic field-level errors    |
-| **JSON Integration**      | Built-in JSON validation/parsing | Manual serde integration    |
-| **Nested Validation**     | Automatic nested struct support  | Manual implementation       |
-| **Schema Reuse**          | Composable and reusable schemas  | Struct-bound validation     |
-| **Type Safety**           | Full type inference              | Limited type information    |
-| **Performance**           | Optimized validation pipeline    | Direct field validation     |
-| **Extensibility**         | Custom validators and schemas    | Custom validation functions |
-| **Framework Integration** | Built-in web framework support   | Manual integration required |
+| Feature                   | zod-rs                            | validator crate             |
+| ------------------------- | --------------------------------- | --------------------------- |
+| **Schema Definition**     | Derive macro with attributes      | Struct attributes only      |
+| **Runtime Flexibility**   | Dynamic schema creation           | Compile-time only           |
+| **Error Messages**        | Detailed with full path context   | Basic field-level errors    |
+| **JSON Integration**      | Built-in JSON validation/parsing  | Manual serde integration    |
+| **Nested Validation**     | Automatic nested struct support   | Manual implementation       |
+| **Schema Reuse**          | Composable and reusable schemas   | Struct-bound validation     |
+| **Type Safety**           | Full type inference               | Limited type information    |
+| **Performance**           | Optimized validation pipeline     | Direct field validation     |
+| **Extensibility**         | Custom validators and schemas     | Custom validation functions |
+| **Framework Integration** | Built-in web framework support    | Manual integration required |
+| **Internationalization**  | Built-in Localized error messages | No i18n support    |
 
 ### Migration from Validator Crate
 

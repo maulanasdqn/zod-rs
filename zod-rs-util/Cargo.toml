@@ -13,9 +13,7 @@ documentation = "https://docs.rs/zod-rs-util"
 homepage = "https://github.com/maulanasdqn/zod-rs"
 
 [dependencies]
-thiserror.workspace = true
-serde = { workspace = true, optional = true }
+serde_json.workspace = true
 
 [features]
 default = []
-serde = ["dep:serde"]

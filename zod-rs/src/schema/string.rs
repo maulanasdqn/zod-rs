@@ -1,11 +1,16 @@
-use crate::schema::{value_type_name, Schema};
+use crate::schema::Schema;
 use serde_json::Value;
-use zod_rs_util::{ValidateResult, ValidationError};
+use zod_rs_util::{
+    StringFormat, ValidateResult, ValidationError, ValidationOrigin, ValidationType,
+};
 
 #[derive(Debug, Clone)]
 pub struct StringSchema {
     min_length: Option<usize>,
     max_length: Option<usize>,
+    starts_with: Option<String>,
+    ends_with: Option<String>,
+    includes: Option<String>,
     pattern: Option<regex::Regex>,
     email: bool,
     url: bool,
@@ -16,6 +21,9 @@ impl StringSchema {
         Self {
             min_length: None,
             max_length: None,
+            starts_with: None,
+            ends_with: None,
+            includes: None,
             pattern: None,
             email: false,
             url: false,
@@ -34,6 +42,21 @@ impl StringSchema {
 
     pub fn length(self, len: usize) -> Self {
         self.min(len).max(len)
+    }
+
+    pub fn starts_with(mut self, val: &str) -> Self {
+        self.starts_with = Some(val.into());
+        self
+    }
+
+    pub fn ends_with(mut self, val: &str) -> Self {
+        self.ends_with = Some(val.into());
+        self
+    }
+
+    pub fn includes(mut self, val: &str) -> Self {
+        self.includes = Some(val.into());
+        self
     }
 
     pub fn regex(mut self, pattern: &str) -> Self {
@@ -63,15 +86,20 @@ impl Schema<String> for StringSchema {
         let string_val = match value.as_str() {
             Some(s) => s.to_string(),
             None => {
-                return Err(ValidationError::invalid_type("string", value_type_name(value)).into());
+                return Err(ValidationError::invalid_type(
+                    ValidationType::String,
+                    ValidationType::from(value),
+                )
+                .into());
             }
         };
 
         if let Some(min) = self.min_length {
             if string_val.len() < min {
-                return Err(ValidationError::invalid_length(
-                    string_val.len(),
-                    format!("minimum length is {}", min),
+                return Err(ValidationError::too_small(
+                    ValidationOrigin::String,
+                    min.to_string(),
+                    true,
                 )
                 .into());
             }
@@ -79,9 +107,40 @@ impl Schema<String> for StringSchema {
 
         if let Some(max) = self.max_length {
             if string_val.len() > max {
-                return Err(ValidationError::invalid_length(
-                    string_val.len(),
-                    format!("maximum length is {}", max),
+                return Err(ValidationError::too_big(
+                    ValidationOrigin::String,
+                    max.to_string(),
+                    true,
+                )
+                .into());
+            }
+        }
+
+        if let Some(starts_with) = &self.starts_with {
+            if !string_val.starts_with(starts_with) {
+                return Err(ValidationError::invalid_format(
+                    StringFormat::StartsWith,
+                    Some(starts_with.to_string()),
+                )
+                .into());
+            }
+        }
+
+        if let Some(ends_with) = &self.ends_with {
+            if !string_val.ends_with(ends_with) {
+                return Err(ValidationError::invalid_format(
+                    StringFormat::EndsWith,
+                    Some(ends_with.to_string()),
+                )
+                .into());
+            }
+        }
+
+        if let Some(includes) = &self.includes {
+            if !string_val.contains(includes) {
+                return Err(ValidationError::invalid_format(
+                    StringFormat::Includes,
+                    Some(includes.to_string()),
                 )
                 .into());
             }
@@ -89,16 +148,22 @@ impl Schema<String> for StringSchema {
 
         if let Some(pattern) = &self.pattern {
             if !pattern.is_match(&string_val) {
-                return Err(ValidationError::pattern_mismatch(pattern.as_str()).into());
+                return Err(ValidationError::invalid_format(
+                    StringFormat::Regex,
+                    Some(pattern.to_string()),
+                )
+                .into());
             }
         }
 
         if self.email && !is_valid_email(&string_val) {
-            return Err(ValidationError::invalid_format("invalid email format").into());
+            return Err(
+                ValidationError::invalid_format(StringFormat::custom("email"), None).into(),
+            );
         }
 
         if self.url && !is_valid_url(&string_val) {
-            return Err(ValidationError::invalid_format("invalid URL format").into());
+            return Err(ValidationError::invalid_format(StringFormat::custom("url"), None).into());
         }
 
         Ok(string_val)
@@ -131,5 +196,33 @@ mod tests {
         assert!(schema.validate(&json!("hi")).is_err());
         assert!(schema.validate(&json!("this is too long")).is_err());
         assert!(schema.validate(&json!(123)).is_err());
+    }
+
+    #[test]
+    fn test_string_starts_with() {
+        let schema = string().starts_with("john");
+
+        assert!(schema.validate(&json!("john doe")).is_ok());
+        assert!(schema.validate(&json!("marry jane")).is_err());
+    }
+
+    #[test]
+    fn test_string_ends_with() {
+        let schema = string().ends_with("jane");
+
+        assert!(schema.validate(&json!("john doe")).is_err());
+        assert!(schema.validate(&json!("marry jane")).is_ok());
+    }
+
+    #[test]
+    fn test_string_includes() {
+        let schema = string().includes("25 years old");
+
+        assert!(schema
+            .validate(&json!("I am an 25 years old art director."))
+            .is_ok());
+        assert!(schema
+            .validate(&json!("I AM AN 25 YEARS OLD ART DIRECTOR"))
+            .is_err());
     }
 }
