@@ -565,26 +565,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0bf256ce5efdfa370213c1dabab5935a12e49f2c58d15e9eac2870d3b4f27263"
 
 [[package]]
-name = "thiserror"
-version = "1.0.69"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
-dependencies = [
- "thiserror-impl",
-]
-
-[[package]]
-name = "thiserror-impl"
-version = "1.0.69"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "tokio"
 version = "1.45.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -776,8 +756,8 @@ dependencies = [
  "serde_json",
  "tokio",
  "tower 0.4.13",
- "zod-rs-macros 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "zod-rs-util 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "zod-rs-macros",
+ "zod-rs-util",
 ]
 
 [[package]]
@@ -791,30 +771,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "zod-rs-macros"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4671e6b575efc6619bff4d87304bf289a131aa4a5e40509784ecd57713e9b197"
-dependencies = [
- "proc-macro2",
- "quote",
- "serde",
- "syn",
-]
-
-[[package]]
 name = "zod-rs-util"
 version = "0.1.0"
 dependencies = [
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "zod-rs-util"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6a29062dd7162d7def175bfb047ca899ae9e61d4dc0d504a892db4af8285db1"
-dependencies = [
- "thiserror",
+ "serde_json",
 ]

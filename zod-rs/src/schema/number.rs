@@ -1,6 +1,8 @@
-use crate::schema::{value_type_name, Schema};
+use crate::schema::Schema;
 use serde_json::Value;
-use zod_rs_util::{ValidateResult, ValidationError};
+use zod_rs_util::{
+    NumberConstraint, ValidateResult, ValidationError, ValidationOrigin, ValidationType,
+};
 
 #[derive(Debug, Clone)]
 pub struct NumberSchema {
@@ -80,44 +82,62 @@ impl Schema<f64> for NumberSchema {
         let num = match value.as_f64() {
             Some(n) => n,
             None => {
-                return Err(ValidationError::invalid_type("number", value_type_name(value)).into());
+                return Err(ValidationError::invalid_type(
+                    ValidationType::Number,
+                    ValidationType::from(value),
+                )
+                .into());
             }
         };
 
         if self.integer && num.fract() != 0.0 {
-            return Err(ValidationError::invalid_type("integer", "float").into());
+            return Err(ValidationError::invalid_type(
+                ValidationType::custom("integer"),
+                ValidationType::custom("float"),
+            )
+            .into());
         }
 
         if self.finite && !num.is_finite() {
-            return Err(ValidationError::custom("number must be finite").into());
+            return Err(ValidationError::invalid_number(NumberConstraint::Finite).into());
         }
 
         if let Some(min) = self.min {
             if num < min {
-                return Err(ValidationError::too_small(num.to_string(), min.to_string()).into());
+                return Err(ValidationError::too_small(
+                    ValidationOrigin::Number,
+                    min.to_string(),
+                    true,
+                )
+                .into());
             }
         }
 
         if let Some(max) = self.max {
             if num > max {
-                return Err(ValidationError::too_big(num.to_string(), max.to_string()).into());
+                return Err(ValidationError::too_big(
+                    ValidationOrigin::Number,
+                    max.to_string(),
+                    true,
+                )
+                .into());
             }
         }
 
         if self.positive && num <= 0.0 {
-            return Err(ValidationError::custom("number must be positive").into());
+            return Err(ValidationError::invalid_number(NumberConstraint::Positive).into());
         }
 
         if self.negative && num >= 0.0 {
-            return Err(ValidationError::custom("number must be negative").into());
+            return Err(ValidationError::invalid_number(NumberConstraint::Negative).into());
         }
 
         if self.nonnegative && num < 0.0 {
-            return Err(ValidationError::custom("number must be non-negative").into());
+            return Err(ValidationError::invalid_number(NumberConstraint::NonNegative).into());
         }
 
         if self.nonpositive && num > 0.0 {
-            return Err(ValidationError::custom("number must be non-positive").into());
+            return Err(ValidationError::invalid_number(NumberConstraint::NonPositive).into());
         }
 
         Ok(num)

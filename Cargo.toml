@@ -1,10 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-    "zod-rs",
-    "zod-rs-util",
-    "zod-rs-macros",
-]
+members = ["zod-rs", "zod-rs-util", "zod-rs-macros"]
 
 [workspace.package]
 version = "0.1.0"
@@ -19,7 +15,6 @@ categories = ["data-structures", "parser-implementations"]
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-thiserror = "1.0"
 axum = "0.7"
 tokio = { version = "1.0", features = ["full"] }
 tower = "0.4"
