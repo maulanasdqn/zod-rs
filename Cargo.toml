@@ -3,7 +3,7 @@ resolver = "2"
 members = ["zod-rs", "zod-rs-util", "zod-rs-macros"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Maulana Sodiqin <maulanasdqn@gmail.com>"]
 license = "MIT OR Apache-2.0"
