@@ -216,3 +216,43 @@ pub enum NumberConstraint {
     NonNegative,
     NonPositive,
 }
+
+/// Error type for parsing operations that can fail due to JSON parsing or validation.
+/// This provides better error type information than `Box<dyn Error>`.
+#[derive(Debug)]
+pub enum ParseError {
+    /// JSON parsing failed
+    Json(serde_json::Error),
+    /// Validation failed
+    Validation(result::ValidationResult),
+}
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ParseError::Json(e) => write!(f, "JSON parsing error: {}", e),
+            ParseError::Validation(e) => write!(f, "Validation error: {}", e),
+        }
+    }
+}
+
+impl std::error::Error for ParseError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            ParseError::Json(e) => Some(e),
+            ParseError::Validation(e) => Some(e),
+        }
+    }
+}
+
+impl From<serde_json::Error> for ParseError {
+    fn from(e: serde_json::Error) -> Self {
+        ParseError::Json(e)
+    }
+}
+
+impl From<result::ValidationResult> for ParseError {
+    fn from(e: result::ValidationResult) -> Self {
+        ParseError::Validation(e)
+    }
+}

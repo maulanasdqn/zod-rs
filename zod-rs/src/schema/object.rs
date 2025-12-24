@@ -82,7 +82,10 @@ where
         match value {
             Some(v) => {
                 let validated = self.schema.validate(v)?;
-                Ok(serde_json::to_value(validated).unwrap())
+                serde_json::to_value(validated).map_err(|e| {
+                    ValidationError::custom(format!("Failed to serialize validated value: {}", e))
+                        .into()
+                })
             }
             None => Err(ValidationError::required().into()),
         }
@@ -117,7 +120,10 @@ where
         match value {
             Some(v) if !v.is_null() => {
                 let validated = self.schema.validate(v)?;
-                Ok(serde_json::to_value(validated).unwrap())
+                serde_json::to_value(validated).map_err(|e| {
+                    ValidationError::custom(format!("Failed to serialize validated value: {}", e))
+                        .into()
+                })
             }
             _ => Ok(Value::Null),
         }
@@ -197,7 +203,7 @@ pub fn object() -> ObjectSchema {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::schema::{number, string};
+    use crate::schema::{array, number, string};
     use serde_json::json;
 
     #[test]
@@ -257,5 +263,291 @@ mod tests {
                 "age": 25
             }))
             .is_err());
+    }
+
+    // ==================== EDGE CASE TESTS ====================
+
+    // Required Field Edge Cases
+    #[test]
+    fn test_null_for_required_field() {
+        let schema = object().field("name", string());
+        assert!(schema.validate(&json!({"name": null})).is_err());
+    }
+
+    #[test]
+    fn test_missing_required_field() {
+        let schema = object().field("name", string());
+        assert!(schema.validate(&json!({})).is_err());
+    }
+
+    #[test]
+    fn test_empty_string_for_required_field() {
+        let schema = object().field("name", string());
+        assert!(schema.validate(&json!({"name": ""})).is_ok());
+    }
+
+    #[test]
+    fn test_empty_string_with_min_constraint() {
+        let schema = object().field("name", string().min(1));
+        assert!(schema.validate(&json!({"name": ""})).is_err());
+        assert!(schema.validate(&json!({"name": "a"})).is_ok());
+    }
+
+    // Optional Field Edge Cases
+    #[test]
+    fn test_optional_field_null() {
+        let schema = object().optional_field("email", string());
+        let result = schema.validate(&json!({"email": null}));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_optional_field_missing() {
+        let schema = object().optional_field("email", string());
+        let result = schema.validate(&json!({}));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_optional_field_with_value() {
+        let schema = object().optional_field("email", string());
+        let result = schema.validate(&json!({"email": "test@example.com"}));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_optional_field_wrong_type() {
+        let schema = object().optional_field("email", string());
+        assert!(schema.validate(&json!({"email": 123})).is_err());
+    }
+
+    // Nested Objects
+    #[test]
+    fn test_nested_object() {
+        let schema = object()
+            .field("user", object().field("name", string()));
+
+        assert!(schema.validate(&json!({
+            "user": {"name": "John"}
+        })).is_ok());
+
+        assert!(schema.validate(&json!({
+            "user": {"name": 123}
+        })).is_err());
+    }
+
+    #[test]
+    fn test_deeply_nested_object() {
+        let schema = object()
+            .field("level1", object()
+                .field("level2", object()
+                    .field("level3", string())));
+
+        assert!(schema.validate(&json!({
+            "level1": {
+                "level2": {
+                    "level3": "value"
+                }
+            }
+        })).is_ok());
+    }
+
+    #[test]
+    fn test_nested_object_error_path() {
+        let schema = object()
+            .field("user", object()
+                .field("profile", object()
+                    .field("name", string().min(5))));
+
+        let result = schema.validate(&json!({
+            "user": {
+                "profile": {
+                    "name": "hi"
+                }
+            }
+        }));
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        // Error path should be ["user", "profile", "name"]
+        assert_eq!(err.issues[0].path, vec!["user", "profile", "name"]);
+    }
+
+    // Strict Mode
+    #[test]
+    fn test_strict_no_extra_keys() {
+        let schema = object().field("name", string()).strict();
+        assert!(schema.validate(&json!({"name": "John"})).is_ok());
+    }
+
+    #[test]
+    fn test_strict_with_extra_key() {
+        let schema = object().field("name", string()).strict();
+        assert!(schema.validate(&json!({"name": "John", "extra": "value"})).is_err());
+    }
+
+    #[test]
+    fn test_strict_multiple_extra_keys() {
+        let schema = object().field("name", string()).strict();
+        let result = schema.validate(&json!({
+            "name": "John",
+            "extra1": "a",
+            "extra2": "b"
+        }));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_strict_empty_object() {
+        let schema = object().strict();
+        assert!(schema.validate(&json!({})).is_ok());
+        assert!(schema.validate(&json!({"any": "key"})).is_err());
+    }
+
+    // Non-Strict Mode (extra keys allowed)
+    #[test]
+    fn test_non_strict_extra_keys_preserved() {
+        let schema = object().field("name", string());
+        let result = schema.validate(&json!({
+            "name": "John",
+            "extra": "preserved"
+        }));
+        assert!(result.is_ok());
+        let value = result.unwrap();
+        assert_eq!(value.get("extra").unwrap(), "preserved");
+    }
+
+    // Key Edge Cases
+    #[test]
+    fn test_empty_string_key() {
+        let schema = object().field("", string());
+        assert!(schema.validate(&json!({"": "value"})).is_ok());
+    }
+
+    #[test]
+    fn test_key_with_special_chars() {
+        let schema = object().field("user-id", string());
+        assert!(schema.validate(&json!({"user-id": "123"})).is_ok());
+    }
+
+    #[test]
+    fn test_unicode_key() {
+        let schema = object().field("用户名", string());
+        assert!(schema.validate(&json!({"用户名": "张三"})).is_ok());
+    }
+
+    #[test]
+    fn test_key_with_spaces() {
+        let schema = object().field("user name", string());
+        assert!(schema.validate(&json!({"user name": "John"})).is_ok());
+    }
+
+    // Type Rejection
+    #[test]
+    fn test_rejects_array() {
+        let schema = object().field("name", string());
+        assert!(schema.validate(&json!([])).is_err());
+    }
+
+    #[test]
+    fn test_rejects_string() {
+        let schema = object().field("name", string());
+        assert!(schema.validate(&json!("not an object")).is_err());
+    }
+
+    #[test]
+    fn test_rejects_number() {
+        let schema = object().field("name", string());
+        assert!(schema.validate(&json!(123)).is_err());
+    }
+
+    #[test]
+    fn test_rejects_null() {
+        let schema = object().field("name", string());
+        assert!(schema.validate(&json!(null)).is_err());
+    }
+
+    #[test]
+    fn test_rejects_boolean() {
+        let schema = object().field("name", string());
+        assert!(schema.validate(&json!(true)).is_err());
+    }
+
+    // Multiple Fields with Errors
+    #[test]
+    fn test_multiple_field_errors() {
+        let schema = object()
+            .field("name", string().min(5))
+            .field("age", number().min(18.0));
+
+        let result = schema.validate(&json!({
+            "name": "hi",
+            "age": 10
+        }));
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err.issues.len(), 2);
+    }
+
+    // Object with Array Field
+    #[test]
+    fn test_object_with_array_field() {
+        let schema = object()
+            .field("tags", array(string()));
+
+        assert!(schema.validate(&json!({
+            "tags": ["a", "b", "c"]
+        })).is_ok());
+
+        assert!(schema.validate(&json!({
+            "tags": ["a", 123, "c"]
+        })).is_err());
+    }
+
+    #[test]
+    fn test_array_of_objects_error_path() {
+        let schema = object()
+            .field("items", array(object().field("name", string().min(3))));
+
+        let result = schema.validate(&json!({
+            "items": [
+                {"name": "hello"},
+                {"name": "hi"}
+            ]
+        }));
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        // Error should be at path ["items", "1", "name"]
+        assert_eq!(err.issues[0].path, vec!["items", "1", "name"]);
+    }
+
+    // Empty Object
+    #[test]
+    fn test_empty_schema_accepts_empty_object() {
+        let schema = object();
+        assert!(schema.validate(&json!({})).is_ok());
+    }
+
+    #[test]
+    fn test_empty_schema_accepts_any_object() {
+        let schema = object();
+        assert!(schema.validate(&json!({"any": "thing"})).is_ok());
+    }
+
+    // Single Field Object
+    #[test]
+    fn test_single_required_field() {
+        let schema = object().field("id", number());
+        assert!(schema.validate(&json!({"id": 1})).is_ok());
+        assert!(schema.validate(&json!({})).is_err());
+    }
+
+    #[test]
+    fn test_single_optional_field() {
+        let schema = object().optional_field("id", number());
+        assert!(schema.validate(&json!({"id": 1})).is_ok());
+        assert!(schema.validate(&json!({})).is_ok());
     }
 }

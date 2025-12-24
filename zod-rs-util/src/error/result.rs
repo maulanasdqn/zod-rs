@@ -77,11 +77,36 @@ impl ValidationResult {
         }
     }
 
-    pub fn into_result<T>(self) -> Result<T, Self> {
+    /// Converts this ValidationResult into a Result, returning Ok(()) if there are no errors,
+    /// or Err(self) if there are validation errors.
+    ///
+    /// # Example
+    /// ```
+    /// use zod_rs_util::ValidationResult;
+    ///
+    /// let empty = ValidationResult::new();
+    /// assert!(empty.into_result().is_ok());
+    ///
+    /// let with_error = ValidationResult::with_error(
+    ///     zod_rs_util::ValidationError::required()
+    /// );
+    /// assert!(with_error.into_result().is_err());
+    /// ```
+    pub fn into_result(self) -> Result<(), Self> {
         if self.is_empty() {
-            panic!("Cannot convert empty validation result to error")
+            Ok(())
         } else {
             Err(self)
+        }
+    }
+
+    /// Returns Some(self) if there are validation errors, None otherwise.
+    /// Useful for optional error handling patterns.
+    pub fn into_err(self) -> Option<Self> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(self)
         }
     }
 

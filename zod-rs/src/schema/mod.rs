@@ -24,8 +24,22 @@ pub trait Schema<T>: Debug
 where
     T: std::fmt::Debug,
 {
+    /// Validates the value against this schema and returns the validated result.
     fn validate(&self, value: &Value) -> ValidateResult<T>;
 
+    /// Validates and returns the result, panicking on validation failure.
+    ///
+    /// # Panics
+    /// Panics if validation fails. Use `safe_parse()` or `validate()` for non-panicking alternatives.
+    ///
+    /// # Example
+    /// ```should_panic
+    /// use zod_rs::prelude::*;
+    /// use serde_json::json;
+    ///
+    /// let schema = string().min(5);
+    /// let result = schema.parse(&json!("hi")); // panics: string too short
+    /// ```
     fn parse(&self, value: &Value) -> T {
         match self.validate(value) {
             Ok(result) => result,
@@ -33,6 +47,8 @@ where
         }
     }
 
+    /// Validates the value and returns a Result. This is the recommended method for handling
+    /// validation in production code.
     fn safe_parse(&self, value: &Value) -> ValidateResult<T> {
         self.validate(value)
     }

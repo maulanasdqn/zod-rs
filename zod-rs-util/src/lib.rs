@@ -4,7 +4,7 @@ mod locales;
 pub use error::{
     issue::ValidationIssue,
     result::{ValidateResult, ValidationResult},
-    NumberConstraint, StringFormat, ValidationError, ValidationOrigin, ValidationType,
+    NumberConstraint, ParseError, StringFormat, ValidationError, ValidationOrigin, ValidationType,
 };
 pub use locales::*;
 

@@ -36,14 +36,14 @@ pub fn derive_zod_schema(input: TokenStream) -> TokenStream {
                             }
                         }
 
-                        pub fn from_json(json_str: &str) -> Result<Self, Box<dyn std::error::Error>> {
+                        pub fn from_json(json_str: &str) -> Result<Self, zod_rs_util::ParseError> {
                             let value: serde_json::Value = serde_json::from_str(json_str)?;
                             Ok(Self::validate_and_parse(&value)?)
                         }
 
-                        pub fn validate_json(json_str: &str) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+                        pub fn validate_json(json_str: &str) -> Result<serde_json::Value, zod_rs_util::ParseError> {
                             let value: serde_json::Value = serde_json::from_str(json_str)?;
-                            Self::schema().validate(&value).map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
+                            Self::schema().validate(&value)?;
                             Ok(value)
                         }
                     }
@@ -51,12 +51,34 @@ pub fn derive_zod_schema(input: TokenStream) -> TokenStream {
 
                 TokenStream::from(expanded)
             }
-            _ => {
-                panic!("ZodSchema can only be derived for structs with named fields");
+            Fields::Unnamed(_) => {
+                let error = syn::Error::new_spanned(
+                    &input,
+                    "ZodSchema can only be derived for structs with named fields, not tuple structs",
+                );
+                TokenStream::from(error.to_compile_error())
+            }
+            Fields::Unit => {
+                let error = syn::Error::new_spanned(
+                    &input,
+                    "ZodSchema can only be derived for structs with named fields, not unit structs",
+                );
+                TokenStream::from(error.to_compile_error())
             }
         },
-        _ => {
-            panic!("ZodSchema can only be derived for structs");
+        Data::Enum(_) => {
+            let error = syn::Error::new_spanned(
+                &input,
+                "ZodSchema cannot be derived for enums. Consider using UnionSchema instead.",
+            );
+            TokenStream::from(error.to_compile_error())
+        }
+        Data::Union(_) => {
+            let error = syn::Error::new_spanned(
+                &input,
+                "ZodSchema cannot be derived for unions",
+            );
+            TokenStream::from(error.to_compile_error())
         }
     }
 }
@@ -148,14 +170,7 @@ fn parse_zod_attributes(attrs: &[Attribute]) -> ZodAttributes {
                             if i + 1 < tokens.len() {
                                 let value_token = tokens[i + 1].to_string();
                                 if let Some(value) = extract_string_from_parens(&value_token) {
-                                    // Remove quotes if present
-                                    let starts_with_value =
-                                        if value.starts_with('"') && value.ends_with('"') {
-                                            value[1..value.len() - 1].to_string()
-                                        } else {
-                                            value
-                                        };
-                                    zod_attrs.starts_with = Some(starts_with_value);
+                                    zod_attrs.starts_with = Some(strip_quotes(&value));
                                 }
                                 i += 1;
                             }
@@ -164,15 +179,7 @@ fn parse_zod_attributes(attrs: &[Attribute]) -> ZodAttributes {
                             if i + 1 < tokens.len() {
                                 let value_token = tokens[i + 1].to_string();
                                 if let Some(value) = extract_string_from_parens(&value_token) {
-                                    // Remove quotes if present
-                                    let ends_with_value =
-                                        if value.starts_with('"') && value.ends_with('"') {
-                                            value[1..value.len() - 1].to_string()
-                                        } else {
-                                            value
-                                        };
-
-                                    zod_attrs.ends_with = Some(ends_with_value);
+                                    zod_attrs.ends_with = Some(strip_quotes(&value));
                                 }
                                 i += 1;
                             }
@@ -181,15 +188,7 @@ fn parse_zod_attributes(attrs: &[Attribute]) -> ZodAttributes {
                             if i + 1 < tokens.len() {
                                 let value_token = tokens[i + 1].to_string();
                                 if let Some(value) = extract_string_from_parens(&value_token) {
-                                    // Remove quotes if present
-                                    let includes_value =
-                                        if value.starts_with('"') && value.ends_with('"') {
-                                            value[1..value.len() - 1].to_string()
-                                        } else {
-                                            value
-                                        };
-
-                                    zod_attrs.includes = Some(includes_value);
+                                    zod_attrs.includes = Some(strip_quotes(&value));
                                 }
                                 i += 1;
                             }
@@ -198,17 +197,7 @@ fn parse_zod_attributes(attrs: &[Attribute]) -> ZodAttributes {
                             if i + 1 < tokens.len() {
                                 let value_token = tokens[i + 1].to_string();
                                 if let Some(value) = extract_string_from_parens(&value_token) {
-                                    // Remove quotes if present
-                                    let regex_value =
-                                        if value.starts_with('"') && value.ends_with('"') {
-                                            value[1..value.len() - 1].to_string()
-                                        } else if value.starts_with("r\"") && value.ends_with('"') {
-                                            // Handle raw string literals
-                                            value[2..value.len() - 1].to_string()
-                                        } else {
-                                            value
-                                        };
-                                    zod_attrs.regex = Some(regex_value);
+                                    zod_attrs.regex = Some(strip_quotes(&value));
                                 }
                                 i += 1;
                             }
@@ -255,20 +244,31 @@ fn parse_zod_attributes(attrs: &[Attribute]) -> ZodAttributes {
 }
 
 fn extract_number_from_parens(token: &str) -> Option<usize> {
-    if token.starts_with('(') && token.ends_with(')') {
-        let inner = &token[1..token.len() - 1];
-        inner.parse::<usize>().ok()
-    } else {
-        None
-    }
+    token
+        .strip_prefix('(')
+        .and_then(|s| s.strip_suffix(')'))
+        .and_then(|inner| inner.parse::<usize>().ok())
 }
 
 fn extract_string_from_parens(token: &str) -> Option<String> {
-    if token.starts_with('(') && token.ends_with(')') {
-        Some(token[1..token.len() - 1].to_string())
-    } else {
-        None
+    token
+        .strip_prefix('(')
+        .and_then(|s| s.strip_suffix(')'))
+        .map(|s| s.to_string())
+}
+
+/// Safely removes surrounding quotes from a string value
+fn strip_quotes(value: &str) -> String {
+    // Try to strip regular quotes first
+    if let Some(inner) = value.strip_prefix('"').and_then(|s| s.strip_suffix('"')) {
+        return inner.to_string();
     }
+    // Try to strip raw string literal (r"...")
+    if let Some(inner) = value.strip_prefix("r\"").and_then(|s| s.strip_suffix('"')) {
+        return inner.to_string();
+    }
+    // Return as-is if no quotes
+    value.to_string()
 }
 
 fn generate_field_validation_with_attrs(
