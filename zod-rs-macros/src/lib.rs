@@ -66,13 +66,7 @@ pub fn derive_zod_schema(input: TokenStream) -> TokenStream {
                 TokenStream::from(error.to_compile_error())
             }
         },
-        Data::Enum(_) => {
-            let error = syn::Error::new_spanned(
-                &input,
-                "ZodSchema cannot be derived for enums. Consider using UnionSchema instead.",
-            );
-            TokenStream::from(error.to_compile_error())
-        }
+        Data::Enum(data_enum) => generate_enum_schema(name, data_enum),
         Data::Union(_) => {
             let error = syn::Error::new_spanned(
                 &input,
@@ -462,6 +456,133 @@ fn get_option_inner_type(ty: &syn::Type) -> syn::Type {
         }
     }
     syn::parse_quote! { String }
+}
+
+fn generate_enum_schema(name: &syn::Ident, data_enum: &syn::DataEnum) -> TokenStream {
+    let variant_schemas = data_enum.variants.iter().map(|variant| {
+        let variant_name = &variant.ident;
+        let variant_name_str = variant_name.to_string();
+
+        generate_variant_schema(&variant_name_str, &variant.fields)
+    });
+
+    let expanded = quote! {
+        impl #name {
+            pub fn schema() -> impl zod_rs::Schema<serde_json::Value> {
+                zod_rs::union()
+                    #(#variant_schemas)*
+            }
+
+            pub fn validate_and_parse(value: &serde_json::Value) -> Result<Self, zod_rs_util::ValidationResult> {
+                match Self::schema().validate(value) {
+                    Ok(_) => {
+                        serde_json::from_value(value.clone())
+                            .map_err(|e| zod_rs_util::ValidationError::custom(format!("Deserialization failed: {}", e)).into())
+                    }
+                    Err(validation_result) => Err(validation_result)
+                }
+            }
+
+            pub fn from_json(json_str: &str) -> Result<Self, zod_rs_util::ParseError> {
+                let value: serde_json::Value = serde_json::from_str(json_str)?;
+                Ok(Self::validate_and_parse(&value)?)
+            }
+
+            pub fn validate_json(json_str: &str) -> Result<serde_json::Value, zod_rs_util::ParseError> {
+                let value: serde_json::Value = serde_json::from_str(json_str)?;
+                Self::schema().validate(&value)?;
+                Ok(value)
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
+}
+
+fn generate_variant_schema(variant_name: &str, fields: &Fields) -> proc_macro2::TokenStream {
+    match fields {
+        // Unit variant: {"VariantName": null}
+        Fields::Unit => {
+            quote! {
+                .variant(
+                    zod_rs::object()
+                        .field(#variant_name, zod_rs::null())
+                )
+            }
+        }
+
+        // Tuple variant (unnamed fields)
+        Fields::Unnamed(fields_unnamed) => {
+            generate_tuple_variant_schema(variant_name, fields_unnamed)
+        }
+
+        // Struct variant (named fields): {"VariantName": {"field1": ..., "field2": ...}}
+        Fields::Named(fields_named) => {
+            generate_struct_variant_schema(variant_name, fields_named)
+        }
+    }
+}
+
+fn generate_tuple_variant_schema(
+    variant_name: &str,
+    fields: &syn::FieldsUnnamed,
+) -> proc_macro2::TokenStream {
+    let field_count = fields.unnamed.len();
+
+    if field_count == 1 {
+        // Single element: {"VariantName": value}
+        let field = fields.unnamed.first().unwrap();
+        let field_type = &field.ty;
+        let field_attrs = &field.attrs;
+        let inner_validation =
+            generate_base_validation_with_attrs(field_type, &parse_zod_attributes(field_attrs));
+
+        quote! {
+            .variant(
+                zod_rs::object()
+                    .field(#variant_name, #inner_validation)
+            )
+        }
+    } else {
+        // Multiple elements: {"VariantName": [value1, value2, ...]}
+        let element_validations = fields.unnamed.iter().map(|field| {
+            let field_type = &field.ty;
+            let field_attrs = &field.attrs;
+            generate_base_validation_with_attrs(field_type, &parse_zod_attributes(field_attrs))
+        });
+
+        quote! {
+            .variant(
+                zod_rs::object()
+                    .field(#variant_name, zod_rs::tuple()
+                        #(.element(#element_validations))*
+                    )
+            )
+        }
+    }
+}
+
+fn generate_struct_variant_schema(
+    variant_name: &str,
+    fields: &syn::FieldsNamed,
+) -> proc_macro2::TokenStream {
+    let field_validations = fields.named.iter().map(|field| {
+        let field_name = &field.ident;
+        let field_name_str = field_name.as_ref().unwrap().to_string();
+        let field_type = &field.ty;
+        let field_attrs = &field.attrs;
+
+        generate_field_validation_with_attrs(&field_name_str, field_type, field_attrs)
+    });
+
+    quote! {
+        .variant(
+            zod_rs::object()
+                .field(#variant_name, zod_rs::object()
+                    #(#field_validations)*
+                )
+        )
+    }
 }
 
 #[proc_macro]

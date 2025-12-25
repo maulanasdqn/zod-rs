@@ -1,19 +1,23 @@
 mod array;
 mod boolean;
 mod literal;
+mod null;
 mod number;
 mod object;
 mod optional;
 mod string;
+mod tuple;
 mod union;
 
 pub use array::*;
 pub use boolean::*;
 pub use literal::*;
+pub use null::*;
 pub use number::*;
 pub use object::*;
 pub use optional::*;
 pub use string::*;
+pub use tuple::*;
 pub use union::*;
 
 use serde_json::Value;

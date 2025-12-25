@@ -5,9 +5,9 @@ pub use zod_rs_util::Locale;
 
 pub mod prelude {
     pub use crate::schema::{
-        array, boolean, literal, number, object, optional, string, union, ArraySchema,
-        BooleanSchema, LiteralSchema, NumberSchema, ObjectSchema, OptionalSchema, Schema,
-        StringSchema, UnionSchema,
+        array, boolean, literal, null, number, object, optional, string, tuple, union,
+        ArraySchema, BooleanSchema, LiteralSchema, NullSchema, NumberSchema, ObjectSchema,
+        OptionalSchema, Schema, StringSchema, TupleSchema, UnionSchema,
     };
     pub use serde_json::Value;
     #[cfg(feature = "macros")]

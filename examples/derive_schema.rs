@@ -91,6 +91,47 @@ struct Phone {
     full_number: String,
 }
 
+// ==================== ENUM EXAMPLES ====================
+
+/// Unit variants only - maps to tagged null values
+#[derive(Debug, Clone, Serialize, Deserialize, ZodSchema, PartialEq)]
+enum Status {
+    Active,
+    Inactive,
+    Pending,
+}
+
+/// Single-element tuple variants
+#[derive(Debug, Clone, Serialize, Deserialize, ZodSchema, PartialEq)]
+enum Message {
+    Text(String),
+    Number(i32),
+}
+
+/// Multi-element tuple variants
+#[derive(Debug, Clone, Serialize, Deserialize, ZodSchema, PartialEq)]
+enum Shape {
+    Point,
+    Line(i32, i32),
+    Rectangle(i32, i32, i32, i32),
+}
+
+/// Struct variants with named fields
+#[derive(Debug, Clone, Serialize, Deserialize, ZodSchema, PartialEq)]
+enum Event {
+    Click { x: i32, y: i32 },
+    Scroll { delta: f64 },
+    Resize { width: u32, height: u32 },
+}
+
+/// Mixed variant types
+#[derive(Debug, Clone, Serialize, Deserialize, ZodSchema, PartialEq)]
+enum ApiResponse {
+    Success,
+    Data(String),
+    Error { code: i32, message: String },
+}
+
 fn main() {
     println!("🦀 zod-rs Derive Schema Examples");
     println!("=================================");
@@ -382,5 +423,157 @@ mod tests {
         });
 
         assert!(Phone::validate_and_parse(&invaild_phone_dto_full_number).is_err());
+    }
+
+    // ==================== ENUM TESTS ====================
+
+    #[test]
+    fn test_unit_variant_enum() {
+        // Valid unit variants
+        let active = json!({"Active": null});
+        let result = Status::validate_and_parse(&active);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Status::Active);
+
+        let inactive = json!({"Inactive": null});
+        assert!(Status::validate_and_parse(&inactive).is_ok());
+
+        let pending = json!({"Pending": null});
+        assert!(Status::validate_and_parse(&pending).is_ok());
+
+        // Invalid: unknown variant
+        let unknown = json!({"Unknown": null});
+        assert!(Status::validate_and_parse(&unknown).is_err());
+
+        // Invalid: wrong format (string instead of object)
+        let wrong_format = json!("Active");
+        assert!(Status::validate_and_parse(&wrong_format).is_err());
+    }
+
+    #[test]
+    fn test_single_tuple_variant_enum() {
+        // Valid tuple variants
+        let text = json!({"Text": "hello"});
+        let result = Message::validate_and_parse(&text);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Message::Text("hello".to_string()));
+
+        let number = json!({"Number": 42});
+        let result = Message::validate_and_parse(&number);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Message::Number(42));
+
+        // Invalid: wrong type in tuple
+        let wrong_type = json!({"Text": 123});
+        assert!(Message::validate_and_parse(&wrong_type).is_err());
+
+        let wrong_type2 = json!({"Number": "not a number"});
+        assert!(Message::validate_and_parse(&wrong_type2).is_err());
+    }
+
+    #[test]
+    fn test_multi_tuple_variant_enum() {
+        // Unit variant within mixed enum
+        let point = json!({"Point": null});
+        let result = Shape::validate_and_parse(&point);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Shape::Point);
+
+        // Two-element tuple
+        let line = json!({"Line": [0, 10]});
+        let result = Shape::validate_and_parse(&line);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Shape::Line(0, 10));
+
+        // Four-element tuple
+        let rect = json!({"Rectangle": [0, 0, 100, 200]});
+        let result = Shape::validate_and_parse(&rect);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Shape::Rectangle(0, 0, 100, 200));
+
+        // Invalid: wrong tuple length
+        let wrong_len = json!({"Line": [0]});
+        assert!(Shape::validate_and_parse(&wrong_len).is_err());
+
+        let wrong_len2 = json!({"Rectangle": [0, 0, 100]});
+        assert!(Shape::validate_and_parse(&wrong_len2).is_err());
+    }
+
+    #[test]
+    fn test_struct_variant_enum() {
+        // Valid struct variants
+        let click = json!({"Click": {"x": 100, "y": 200}});
+        let result = Event::validate_and_parse(&click);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Event::Click { x: 100, y: 200 });
+
+        let scroll = json!({"Scroll": {"delta": 1.5}});
+        let result = Event::validate_and_parse(&scroll);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Event::Scroll { delta: 1.5 });
+
+        let resize = json!({"Resize": {"width": 800, "height": 600}});
+        let result = Event::validate_and_parse(&resize);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Event::Resize { width: 800, height: 600 });
+
+        // Invalid: missing field
+        let missing = json!({"Click": {"x": 100}});
+        assert!(Event::validate_and_parse(&missing).is_err());
+
+        // Invalid: wrong field type
+        let wrong_type = json!({"Click": {"x": "hundred", "y": 200}});
+        assert!(Event::validate_and_parse(&wrong_type).is_err());
+    }
+
+    #[test]
+    fn test_mixed_variant_enum() {
+        // Unit variant
+        let success = json!({"Success": null});
+        assert_eq!(
+            ApiResponse::validate_and_parse(&success).unwrap(),
+            ApiResponse::Success
+        );
+
+        // Tuple variant
+        let data = json!({"Data": "some payload"});
+        assert_eq!(
+            ApiResponse::validate_and_parse(&data).unwrap(),
+            ApiResponse::Data("some payload".to_string())
+        );
+
+        // Struct variant
+        let error = json!({"Error": {"code": 404, "message": "Not found"}});
+        assert_eq!(
+            ApiResponse::validate_and_parse(&error).unwrap(),
+            ApiResponse::Error {
+                code: 404,
+                message: "Not found".to_string()
+            }
+        );
+    }
+
+    #[test]
+    fn test_enum_from_json() {
+        let json_str = r#"{"Active": null}"#;
+        let result = Status::from_json(json_str);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Status::Active);
+
+        let json_str = r#"{"Click": {"x": 10, "y": 20}}"#;
+        let result = Event::from_json(json_str);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Event::Click { x: 10, y: 20 });
+    }
+
+    #[test]
+    fn test_enum_validate_json() {
+        let json_str = r#"{"Text": "hello"}"#;
+        let result = Message::validate_json(json_str);
+        assert!(result.is_ok());
+
+        let invalid_json_str = r#"{"Text": 123}"#;
+        let result = Message::validate_json(invalid_json_str);
+        assert!(result.is_err());
     }
 }
