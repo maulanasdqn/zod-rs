@@ -1,0 +1,43 @@
+[package]
+name = "zod-rs-ts"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "TypeScript Zod schema generator for zod-rs"
+keywords = ["validation", "schema", "zod", "typescript", "codegen"]
+categories = ["development-tools", "parser-implementations"]
+readme = "../README.md"
+documentation = "https://docs.rs/zod-rs-ts"
+homepage = "https://github.com/maulanasdqn/zod-rs"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2.workspace = true
+quote.workspace = true
+syn.workspace = true
+
+[[bin]]
+name = "zod-rs-ts"
+path = "src/bin/cli.rs"
+required-features = ["cli"]
+
+[features]
+default = []
+cli = ["dep:clap", "dep:walkdir", "dep:regex"]
+
+[dependencies.clap]
+version = "4.0"
+features = ["derive"]
+optional = true
+
+[dependencies.walkdir]
+version = "2.0"
+optional = true
+
+[dependencies.regex]
+workspace = true
+optional = true
