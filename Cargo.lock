@@ -860,7 +860,7 @@ checksum = "9e404bcd8afdaf006e529269d3e85a743f9480c3cef60034d77860d02964f3ba"
 
 [[package]]
 name = "zod-rs"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "axum",
  "regex",
@@ -875,7 +875,7 @@ dependencies = [
 
 [[package]]
 name = "zod-rs-macros"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -885,7 +885,7 @@ dependencies = [
 
 [[package]]
 name = "zod-rs-ts"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "clap",
  "proc-macro2",
@@ -897,7 +897,7 @@ dependencies = [
 
 [[package]]
 name = "zod-rs-util"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "serde_json",
 ]

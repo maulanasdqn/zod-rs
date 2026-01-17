@@ -19,10 +19,12 @@ zod-rs is a TypeScript-first schema validation library with static type inferenc
 - 🔗 **Framework integration** - Built-in support for Axum and other web frameworks
 - ⚡ **High performance** - Efficient validation with minimal overhead
 - 🛠 **Developer friendly** - Intuitive API similar to TypeScript Zod
-- 🔄 **Schema inference** - Automatically generate schemas from Rust structs
+- 🔄 **Schema inference** - Automatically generate schemas from Rust structs and enums
 - 🏷️ **Attribute macros** - Rich validation constraints via `#[zod(...)]` attributes
 - 🔧 **Validator replacement** - Drop-in replacement for the `validator` crate
 - 🌐 **Internationalization (i18n)** — Localized error messages and validation feedback
+- 📦 **Enum support** - Full enum validation with unit, tuple, and struct variants
+- 🔄 **TypeScript codegen** - Generate TypeScript Zod schemas from Rust types
 
 ## 📦 Installation
 
@@ -30,13 +32,18 @@ Add zod-rs to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-zod-rs = "0.1.0"
+zod-rs = "0.4"
 
 # Optional: for web framework integration
-zod-rs = { version = "0.1.0", features = ["axum"] }
+zod-rs = { version = "0.4", features = ["axum"] }
+
+# For TypeScript Zod schema generation
+zod-rs = { version = "0.4", features = ["ts"] }
+# Or use the standalone crate
+zod-rs-ts = "0.4"
 
 # For schema derivation from structs (recommended)
-zod-rs = "0.1.0"
+zod-rs = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ```
@@ -376,7 +383,7 @@ Enable the `axum` feature in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-zod-rs = { version = "0.1.0", features = ["axum"] }
+zod-rs = { version = "0.4", features = ["axum"] }
 axum = "0.7"
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
@@ -663,6 +670,170 @@ The `ZodSchema` derive macro generates the following methods:
 - `from_json(json_str)` - Validates and parses from JSON string
 - `validate_json(json_str)` - Validates JSON string (returns Value)
 
+### Enum Support
+
+zod-rs fully supports Rust enums with the `ZodSchema` derive macro. Enums are validated using the externally-tagged format (serde default).
+
+```rust
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use zod_rs::prelude::*;
+
+// Unit variants
+#[derive(Debug, Serialize, Deserialize, ZodSchema)]
+enum Status {
+    Active,
+    Inactive,
+    Pending,
+}
+
+// Tuple variants
+#[derive(Debug, Serialize, Deserialize, ZodSchema)]
+enum Message {
+    Text(String),
+    Number(i32),
+    Coords(i32, i32),
+}
+
+// Struct variants
+#[derive(Debug, Serialize, Deserialize, ZodSchema)]
+enum Event {
+    Click { x: i32, y: i32 },
+    Scroll { delta: f64 },
+}
+
+// Mixed variants
+#[derive(Debug, Serialize, Deserialize, ZodSchema)]
+enum ApiResponse {
+    Success,
+    Data(String),
+    Error { code: i32, message: String },
+}
+
+fn main() {
+    // Unit variant: {"Active": null}
+    let status = json!({"Active": null});
+    assert!(Status::validate_and_parse(&status).is_ok());
+
+    // Tuple variant (single): {"Text": "hello"}
+    let msg = json!({"Text": "hello"});
+    assert!(Message::validate_and_parse(&msg).is_ok());
+
+    // Tuple variant (multiple): {"Coords": [10, 20]}
+    let coords = json!({"Coords": [10, 20]});
+    assert!(Message::validate_and_parse(&coords).is_ok());
+
+    // Struct variant: {"Click": {"x": 100, "y": 200}}
+    let event = json!({"Click": {"x": 100, "y": 200}});
+    assert!(Event::validate_and_parse(&event).is_ok());
+}
+```
+
+#### JSON Format for Enum Variants
+
+| Variant Type | Rust | JSON |
+|-------------|------|------|
+| Unit | `Status::Active` | `{"Active": null}` |
+| Tuple (single) | `Message::Text("hi")` | `{"Text": "hi"}` |
+| Tuple (multiple) | `Message::Coords(1, 2)` | `{"Coords": [1, 2]}` |
+| Struct | `Event::Click { x: 1, y: 2 }` | `{"Click": {"x": 1, "y": 2}}` |
+
+### TypeScript Zod Schema Generation
+
+Generate TypeScript Zod schemas from your Rust types using the `ZodTs` derive macro.
+
+```rust
+use zod_rs_ts::ZodTs;
+
+#[derive(ZodTs)]
+struct User {
+    #[zod(min_length(2), max_length(50))]
+    username: String,
+
+    #[zod(email)]
+    email: String,
+
+    #[zod(min(18.0), max(120.0), int)]
+    age: u32,
+
+    bio: Option<String>,
+}
+
+fn main() {
+    // Generate TypeScript code
+    let ts_code = User::zod_ts();
+    println!("{}", ts_code);
+
+    // Or write to file
+    std::fs::write("schemas/user.ts", ts_code).unwrap();
+}
+```
+
+**Generated TypeScript:**
+
+```typescript
+import { z } from 'zod';
+
+export const UserSchema = z.object({
+  username: z.string().min(2).max(50),
+  email: z.string().email(),
+  age: z.number().int().min(18).max(120),
+  bio: z.string().optional()
+});
+
+export type User = z.infer<typeof UserSchema>;
+```
+
+#### Enum TypeScript Generation
+
+```rust
+#[derive(ZodTs)]
+enum Status {
+    Active,
+    Inactive,
+}
+
+#[derive(ZodTs)]
+enum Event {
+    Click { x: i32, y: i32 },
+    Scroll { delta: f64 },
+}
+
+fn main() {
+    println!("{}", Status::zod_ts());
+    println!("{}", Event::zod_ts());
+}
+```
+
+**Generated TypeScript:**
+
+```typescript
+export const StatusSchema = z.union([
+  z.object({ Active: z.null() }),
+  z.object({ Inactive: z.null() })
+]);
+
+export const EventSchema = z.union([
+  z.object({ Click: z.object({ x: z.number().int(), y: z.number().int() }) }),
+  z.object({ Scroll: z.object({ delta: z.number() }) })
+]);
+```
+
+#### CLI Tool
+
+Install and use the CLI for batch generation:
+
+```bash
+# Install with CLI feature
+cargo install zod-rs-ts --features cli
+
+# Generate schemas from Rust source files
+zod-rs-ts generate --input src/ --output schemas/
+
+# Generate all schemas in a single file
+zod-rs-ts generate --input src/ --output schemas/index.ts --single-file
+```
+
 ### Custom Validation
 
 ```rust
@@ -739,6 +910,9 @@ cargo run --example derive_schema
 # Validator crate replacement
 cargo run --example validator_replacement
 
+# TypeScript Zod schema generation
+cargo run --example zod_ts --features ts
+
 # Axum integration
 cargo run --example axum_usage --features axum
 ```
@@ -748,6 +922,8 @@ cargo run --example axum_usage --features axum
 This project uses a Cargo workspace with the following crates:
 
 - **`zod-rs`** - Main validation library with schema types
+- **`zod-rs-macros`** - Derive macros for `ZodSchema`
+- **`zod-rs-ts`** - TypeScript Zod schema generation
 - **`zod-rs-util`** - Utility functions, error handling and i18n
 
 ## 🤝 Contributing
