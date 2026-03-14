@@ -1,0 +1,65 @@
+---
+title: zod-rs
+description: A Rust implementation inspired by Zod for schema validation
+template: splash
+hero:
+  tagline: TypeScript-first schema validation with static type inference, built for Rust
+  actions:
+    - text: Get Started
+      link: /getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/maulanasdqn/zod-rs
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Why zod-rs?
+
+<CardGrid>
+  <Card title="Type-safe validation" icon="approve-check">
+    Full type safety with compile-time guarantees. Define schemas once, get validated and typed data.
+  </Card>
+  <Card title="Zero dependencies" icon="rocket">
+    Lightweight core with optional integrations for Axum and other web frameworks.
+  </Card>
+  <Card title="Rich error messages" icon="warning">
+    Detailed validation errors with full path information, plus i18n support.
+  </Card>
+  <Card title="Derive macros" icon="setting">
+    Automatically generate schemas from Rust structs and enums with `#[derive(ZodSchema)]`.
+  </Card>
+  <Card title="TypeScript codegen" icon="document">
+    Generate TypeScript Zod schemas from Rust types with `#[derive(ZodTs)]`.
+  </Card>
+  <Card title="Composable schemas" icon="puzzle">
+    Build complex validation rules from simple primitives. Reuse schemas across your codebase.
+  </Card>
+</CardGrid>
+
+## Quick example
+
+```rust
+use serde_json::json;
+use zod_rs::prelude::*;
+
+fn main() {
+    let schema = object()
+        .field("name", string().min(2).max(50))
+        .field("email", string().email())
+        .field("age", number().min(0.0).max(120.0).int());
+
+    let data = json!({
+        "name": "Alice",
+        "email": "alice@example.com",
+        "age": 25
+    });
+
+    match schema.safe_parse(&data) {
+        Ok(value) => println!("Valid: {:?}", value),
+        Err(errors) => println!("Invalid: {}", errors),
+    }
+}
+```

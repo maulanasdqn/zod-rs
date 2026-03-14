@@ -1,1 +1,4 @@
 /target
+zod-rs-web/node_modules/
+zod-rs-web/dist/
+zod-rs-web/.astro/
