@@ -1,8 +1,8 @@
-# 🦀 zod-rs
+# zod-rs
 
 ![image](https://github.com/user-attachments/assets/033617ef-3b7d-4c03-87e5-b082f98a26d5)
 
-🦀 **A Rust implementation inspired by Zod for schema validation**
+**A Rust implementation inspired by Zod for schema validation**
 
 [![Crates.io](https://img.shields.io/crates/v/zod-rs.svg)](https://crates.io/crates/zod-rs)
 [![Documentation](https://docs.rs/zod-rs/badge.svg)](https://docs.rs/zod-rs)
@@ -10,23 +10,23 @@
 
 zod-rs is a TypeScript-first schema validation library with static type inference, inspired by [Zod](https://github.com/colinhacks/zod). It provides a simple and intuitive API for validating JSON data with comprehensive error reporting.
 
-## ✨ Features
+## Features
 
-- 🔒 **Type-safe validation** - Full type safety with compile-time guarantees
-- 🚀 **Zero dependencies** - Lightweight core with optional integrations
-- 📝 **Rich error messages** - Detailed validation errors with path information
-- 🎯 **Composable schemas** - Build complex validation rules from simple primitives
-- 🔗 **Framework integration** - Built-in support for Axum and other web frameworks
-- ⚡ **High performance** - Efficient validation with minimal overhead
-- 🛠 **Developer friendly** - Intuitive API similar to TypeScript Zod
-- 🔄 **Schema inference** - Automatically generate schemas from Rust structs and enums
-- 🏷️ **Attribute macros** - Rich validation constraints via `#[zod(...)]` attributes
-- 🔧 **Validator replacement** - Drop-in replacement for the `validator` crate
-- 🌐 **Internationalization (i18n)** — Localized error messages and validation feedback
-- 📦 **Enum support** - Full enum validation with unit, tuple, and struct variants
-- 🔄 **TypeScript codegen** - Generate TypeScript Zod schemas from Rust types
+- **Type-safe validation** - Full type safety with compile-time guarantees
+- **Zero dependencies** - Lightweight core with optional integrations
+- **Rich error messages** - Detailed validation errors with path information
+- **Composable schemas** - Build complex validation rules from simple primitives
+- **Framework integration** - Built-in support for Axum and other web frameworks
+- **High performance** - Efficient validation with minimal overhead
+- **Developer friendly** - Intuitive API similar to TypeScript Zod
+- **Schema inference** - Automatically generate schemas from Rust structs and enums
+- **Attribute macros** - Rich validation constraints via `#[zod(...)]` attributes
+- **Validator replacement** - Drop-in replacement for the `validator` crate
+- **Internationalization (i18n)** — Localized error messages and validation feedback
+- **Enum support** - Full enum validation with unit, tuple, and struct variants
+- **TypeScript codegen** - Generate TypeScript Zod schemas from Rust types
 
-## 📦 Installation
+## Installation
 
 Add zod-rs to your `Cargo.toml`:
 
@@ -48,7 +48,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ```rust
 use serde_json::json;
@@ -69,13 +69,13 @@ fn main() {
     });
 
     match user_schema.safe_parse(&user_data) {
-        Ok(validated_data) => println!("✅ Valid: {:?}", validated_data),
-        Err(errors) => println!("❌ Invalid: {}", errors),
+        Ok(validated_data) => println!("Valid: {:?}", validated_data),
+        Err(errors) => println!("Invalid: {}", errors),
     }
 }
 ```
 
-## 📚 API Reference
+## API Reference
 
 ### Basic Types
 
@@ -293,7 +293,7 @@ let schema = string();
 let result = schema.validate(&json!("hello"));
 ```
 
-## 🏗 Complex Examples
+## Complex Examples
 
 ### Struct Validation
 
@@ -375,7 +375,7 @@ let user_data = json!({
 assert!(user_schema().safe_parse(&user_data).is_ok());
 ```
 
-## 🌐 Web Framework Integration
+## Web Framework Integration
 
 ### Axum Integration
 
@@ -464,7 +464,7 @@ async fn main() {
 }
 ```
 
-## ⚠️ Error Handling
+## Error Handling
 
 zod-rs provides detailed error information with path tracking:
 
@@ -509,7 +509,7 @@ match schema.safe_parse(&invalid_data) {
 - `ValidationError::InvalidUnion` - No union matching
 - `ValidationError::Custom` - Custom validation errors
 
-## 🌐 Internationalization (i18n)
+## Internationalization (i18n)
 
 zod-rs comes with built-in locale support so you can get validation errors in different languages.
 
@@ -535,15 +535,14 @@ let input = json!({
 });
 
 match login_schema.safe_parse(&input) {
-    Ok(output) => println!("✅ Valid login: {output}"),
+    Ok(output) => println!("Valid login: {output}"),
     Err(err) => println!("{}", err.local(Locale::Ar)),
 }
 ```
 
-💡 Want to add a new language? Missing a translation?
-Open an issue or PR on GitHub — contributions are welcome.
+Want to add a new language? Missing a translation? Open an issue or PR on GitHub — contributions are welcome.
 
-## 🔧 Advanced Usage
+## Advanced Usage
 
 ### Schema Inference from Structs
 
@@ -911,7 +910,7 @@ fn login_schema() -> impl Schema<Value> {
 }
 ```
 
-## 🧪 Testing
+## Testing
 
 Run the test suite:
 
@@ -941,7 +940,7 @@ cargo run --example zod_ts --features ts
 cargo run --example axum_usage --features axum
 ```
 
-## 📦 Workspace Structure
+## Workspace Structure
 
 This project uses a Cargo workspace with the following crates:
 
@@ -950,7 +949,7 @@ This project uses a Cargo workspace with the following crates:
 - **`zod-rs-ts`** - TypeScript Zod schema generation
 - **`zod-rs-util`** - Utility functions, error handling and i18n
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
@@ -962,7 +961,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 4. Format code: `cargo fmt`
 5. Check with clippy: `cargo clippy`
 
-## 📄 License
+## License
 
 This project is licensed under either of
 
@@ -971,18 +970,18 @@ This project is licensed under either of
 
 at your option.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Inspired by [Zod](https://github.com/colinhacks/zod) by Colin McDonnell
-- Built with ❤️ for the Rust community
+- Built for the Rust community
 
-## 📚 Related Projects
+## Related Projects
 
 - [Zod](https://github.com/colinhacks/zod) - TypeScript-first schema validation
 - [Serde](https://github.com/serde-rs/serde) - Rust serialization framework
 - [Validator](https://github.com/Keats/validator) - Rust struct validation
 
-## 🎯 zod-rs vs Validator Crate
+## zod-rs vs Validator Crate
 
 zod-rs provides significant advantages over the traditional `validator` crate:
 
@@ -1053,4 +1052,4 @@ let is_valid = schema.validate(&user_data).is_ok();
 
 ---
 
-Made with 🦀 and ❤️ by [Maulana Sodiqin](https://github.com/maulanasdqn)
+Made by [Maulana Sodiqin](https://github.com/maulanasdqn)
