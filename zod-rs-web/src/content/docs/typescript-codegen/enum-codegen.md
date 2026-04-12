@@ -24,6 +24,8 @@ fn main() {
 Generated TypeScript:
 
 ```typescript
+import * as z from "zod";
+
 export const StatusSchema = z.union([
   z.object({ Active: z.null() }),
   z.object({ Inactive: z.null() })
@@ -47,11 +49,15 @@ fn main() {
 Generated TypeScript:
 
 ```typescript
+import * as z from "zod";
+
 export const EventSchema = z.union([
   z.object({ Click: z.object({ x: z.number().int(), y: z.number().int() }) }),
   z.object({ Scroll: z.object({ delta: z.number() }) })
 ]);
 ```
+
+See [ZodTs Derive — Zod version](/typescript-codegen/zod-ts/#zod-version) for switching between Zod v3 and v4 output.
 
 ## Mixed enums
 
