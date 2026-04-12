@@ -1,8 +1,23 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use regex::Regex;
 use std::fs;
 use std::path::PathBuf;
 use walkdir::WalkDir;
+
+#[derive(Copy, Clone, Debug, ValueEnum)]
+enum ZodVersion {
+    V3,
+    V4,
+}
+
+impl ZodVersion {
+    fn import_line(self) -> &'static str {
+        match self {
+            ZodVersion::V3 => "import { z } from 'zod';",
+            ZodVersion::V4 => "import * as z from \"zod\";",
+        }
+    }
+}
 
 #[derive(Parser)]
 #[command(name = "zod-rs-ts")]
@@ -27,6 +42,10 @@ enum Commands {
         /// Generate all schemas in a single file
         #[arg(long)]
         single_file: bool,
+
+        /// Target Zod version for the generated import statement
+        #[arg(long, value_enum, default_value_t = ZodVersion::V4)]
+        zod_version: ZodVersion,
     },
 }
 
@@ -38,8 +57,9 @@ fn main() {
             input,
             output,
             single_file,
+            zod_version,
         } => {
-            if let Err(e) = generate_schemas(&input, &output, single_file) {
+            if let Err(e) = generate_schemas(&input, &output, single_file, zod_version) {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
@@ -51,6 +71,7 @@ fn generate_schemas(
     input: &PathBuf,
     output: &PathBuf,
     single_file: bool,
+    zod_version: ZodVersion,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut all_schemas = Vec::new();
 
@@ -61,7 +82,7 @@ fn generate_schemas(
         .filter(|e| e.path().extension().map_or(false, |ext| ext == "rs"))
     {
         let content = fs::read_to_string(entry.path())?;
-        let schemas = extract_schemas(&content);
+        let schemas = extract_schemas(&content, zod_version);
 
         if !schemas.is_empty() {
             if single_file {
@@ -83,7 +104,8 @@ fn generate_schemas(
         fs::create_dir_all(output.parent().unwrap_or(output))?;
 
         let combined = format!(
-            "import {{ z }} from 'zod';\n\n{}",
+            "{}\n\n{}",
+            zod_version.import_line(),
             all_schemas
                 .iter()
                 .map(|(_, schema)| {
@@ -107,7 +129,7 @@ fn generate_schemas(
     Ok(())
 }
 
-fn extract_schemas(content: &str) -> Vec<(String, String)> {
+fn extract_schemas(content: &str, zod_version: ZodVersion) -> Vec<(String, String)> {
     let mut schemas = Vec::new();
 
     // Regex to find structs/enums with ZodTs derive
@@ -123,13 +145,13 @@ fn extract_schemas(content: &str) -> Vec<(String, String)> {
             for j in i + 1..std::cmp::min(i + 5, lines.len()) {
                 if let Some(caps) = struct_re.captures(lines[j]) {
                     let name = caps.get(1).unwrap().as_str().to_string();
-                    if let Some(schema) = generate_struct_schema(&lines, j, &name) {
+                    if let Some(schema) = generate_struct_schema(&lines, j, &name, zod_version) {
                         schemas.push((name, schema));
                     }
                     break;
                 } else if let Some(caps) = enum_re.captures(lines[j]) {
                     let name = caps.get(1).unwrap().as_str().to_string();
-                    if let Some(schema) = generate_enum_schema(&lines, j, &name) {
+                    if let Some(schema) = generate_enum_schema(&lines, j, &name, zod_version) {
                         schemas.push((name, schema));
                     }
                     break;
@@ -141,7 +163,12 @@ fn extract_schemas(content: &str) -> Vec<(String, String)> {
     schemas
 }
 
-fn generate_struct_schema(lines: &[&str], start: usize, name: &str) -> Option<String> {
+fn generate_struct_schema(
+    lines: &[&str],
+    start: usize,
+    name: &str,
+    zod_version: ZodVersion,
+) -> Option<String> {
     let mut fields = Vec::new();
     let mut in_struct = false;
     let mut brace_count = 0;
@@ -191,13 +218,14 @@ fn generate_struct_schema(lines: &[&str], start: usize, name: &str) -> Option<St
 
     let schema_name = format!("{}Schema", name);
     Some(format!(
-        r#"import {{ z }} from 'zod';
+        r#"{}
 
 export const {} = z.object({{
 {}
 }});
 
 export type {} = z.infer<typeof {}>;"#,
+        zod_version.import_line(),
         schema_name,
         fields.join(",\n"),
         name,
@@ -205,7 +233,12 @@ export type {} = z.infer<typeof {}>;"#,
     ))
 }
 
-fn generate_enum_schema(lines: &[&str], start: usize, name: &str) -> Option<String> {
+fn generate_enum_schema(
+    lines: &[&str],
+    start: usize,
+    name: &str,
+    zod_version: ZodVersion,
+) -> Option<String> {
     let mut variants = Vec::new();
     let mut in_enum = false;
     let mut brace_count = 0;
@@ -285,13 +318,14 @@ fn generate_enum_schema(lines: &[&str], start: usize, name: &str) -> Option<Stri
 
     let schema_name = format!("{}Schema", name);
     Some(format!(
-        r#"import {{ z }} from 'zod';
+        r#"{}
 
 export const {} = z.union([
   {}
 ]);
 
 export type {} = z.infer<typeof {}>;"#,
+        zod_version.import_line(),
         schema_name,
         variants.join(",\n  "),
         name,

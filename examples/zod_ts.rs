@@ -63,7 +63,10 @@ mod tests {
     #[test]
     fn test_user_zod_ts() {
         let ts = User::zod_ts();
+        #[cfg(feature = "zod-v3")]
         assert!(ts.contains("import { z } from 'zod'"));
+        #[cfg(not(feature = "zod-v3"))]
+        assert!(ts.contains("import * as z from \"zod\""));
         assert!(ts.contains("export const UserSchema"));
         assert!(ts.contains("username: z.string().min(2).max(50)"));
         assert!(ts.contains("email: z.string().email()"));

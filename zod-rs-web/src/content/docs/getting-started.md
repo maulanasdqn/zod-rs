@@ -9,7 +9,7 @@ Add zod-rs to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-zod-rs = "0.4"
+zod-rs = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ```
@@ -20,13 +20,14 @@ serde_json = "1.0"
 |---------|-------------|
 | `axum` | Axum web framework integration |
 | `ts` | TypeScript Zod schema generation |
+| `zod-v3` | Emit Zod v3 style imports in TypeScript codegen (default is v4) |
 
 ```toml
 # With Axum integration
-zod-rs = { version = "0.4", features = ["axum"] }
+zod-rs = { version = "1.0", features = ["axum"] }
 
 # With TypeScript codegen
-zod-rs = { version = "0.4", features = ["ts"] }
+zod-rs = { version = "1.0", features = ["ts"] }
 ```
 
 ## Quick start

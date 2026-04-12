@@ -32,18 +32,18 @@ Add zod-rs to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-zod-rs = "0.4"
+zod-rs = "1.0"
 
 # Optional: for web framework integration
-zod-rs = { version = "0.4", features = ["axum"] }
+zod-rs = { version = "1.0", features = ["axum"] }
 
 # For TypeScript Zod schema generation
-zod-rs = { version = "0.4", features = ["ts"] }
+zod-rs = { version = "1.0", features = ["ts"] }
 # Or use the standalone crate
-zod-rs-ts = "0.4"
+zod-rs-ts = "1.0"
 
 # For schema derivation from structs (recommended)
-zod-rs = "0.4"
+zod-rs = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ```
@@ -383,7 +383,7 @@ Enable the `axum` feature in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-zod-rs = { version = "0.4", features = ["axum"] }
+zod-rs = { version = "1.0", features = ["axum"] }
 axum = "0.7"
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
@@ -772,7 +772,7 @@ fn main() {
 **Generated TypeScript:**
 
 ```typescript
-import { z } from 'zod';
+import * as z from "zod";
 
 export const UserSchema = z.object({
   username: z.string().min(2).max(50),
@@ -783,6 +783,27 @@ export const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>;
 ```
+
+#### Zod Version
+
+The generated schemas target **Zod v4** by default (`import * as z from "zod"`). To emit Zod v3 style imports instead, enable the `zod-v3` feature:
+
+```toml
+[dependencies]
+zod-rs = { version = "...", features = ["ts", "zod-v3"] }
+# or, if depending on zod-rs-ts directly:
+zod-rs-ts = { version = "...", features = ["zod-v3"] }
+```
+
+When using the CLI, pass `--zod-version v3` to switch (defaults to `v4`):
+
+```bash
+zod-rs-ts generate --input src/ --output schemas/ --zod-version v3
+```
+
+#### Standard Schema Compatibility
+
+Schemas produced by `ZodTs` are [Standard Schema](https://github.com/standard-schema/standard-schema) compliant out of the box — this comes from Zod itself (Zod v3.24+ and all Zod v4 schemas implement the `~standard` interface natively). That means the generated output works directly with Standard Schema consumers like TanStack Form, React Hook Form, and other validation-library-agnostic tooling, with no extra wiring required.
 
 #### Enum TypeScript Generation
 
@@ -827,11 +848,14 @@ Install and use the CLI for batch generation:
 # Install with CLI feature
 cargo install zod-rs-ts --features cli
 
-# Generate schemas from Rust source files
+# Generate schemas from Rust source files (emits Zod v4 imports by default)
 zod-rs-ts generate --input src/ --output schemas/
 
 # Generate all schemas in a single file
 zod-rs-ts generate --input src/ --output schemas/index.ts --single-file
+
+# Target Zod v3 imports instead
+zod-rs-ts generate --input src/ --output schemas/ --zod-version v3
 ```
 
 ### Custom Validation

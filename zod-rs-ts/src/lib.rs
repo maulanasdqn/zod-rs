@@ -2,6 +2,12 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, Attribute, Data, DeriveInput, Fields, Meta};
 
+#[cfg(feature = "zod-v3")]
+const ZOD_IMPORT: &str = "import { z } from 'zod';";
+
+#[cfg(not(feature = "zod-v3"))]
+const ZOD_IMPORT: &str = "import * as z from \"zod\";";
+
 #[proc_macro_derive(ZodTs, attributes(zod))]
 pub fn derive_zod_ts(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -41,14 +47,14 @@ pub fn derive_zod_ts(input: TokenStream) -> TokenStream {
                 let schema_name = format!("{}Schema", name_str);
 
                 let ts_code = format!(
-                    r#"import {{ z }} from 'zod';
+                    r#"{}
 
 export const {} = z.object({{
 {}
 }});
 
 export type {} = z.infer<typeof {}>;"#,
-                    schema_name, fields_str, name_str, schema_name
+                    ZOD_IMPORT, schema_name, fields_str, name_str, schema_name
                 );
 
                 let expanded = quote! {
@@ -83,14 +89,14 @@ export type {} = z.infer<typeof {}>;"#,
             let schema_name = format!("{}Schema", name_str);
 
             let ts_code = format!(
-                r#"import {{ z }} from 'zod';
+                r#"{}
 
 export const {} = z.union([
   {}
 ]);
 
 export type {} = z.infer<typeof {}>;"#,
-                schema_name, variants_str, name_str, schema_name
+                ZOD_IMPORT, schema_name, variants_str, name_str, schema_name
             );
 
             let expanded = quote! {

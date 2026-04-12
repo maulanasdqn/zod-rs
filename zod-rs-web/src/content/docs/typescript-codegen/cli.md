@@ -29,6 +29,14 @@ zod-rs-ts generate --input src/ --output schemas/index.ts --single-file
 
 Combines all generated schemas into a single TypeScript file.
 
+### Zod version
+
+The CLI emits **Zod v4** imports (`import * as z from "zod"`) by default. To target Zod v3 instead, pass `--zod-version v3`:
+
+```bash
+zod-rs-ts generate --input src/ --output schemas/ --zod-version v3
+```
+
 ## Workflow
 
 A typical workflow for shared validation:

@@ -9,7 +9,7 @@ zod-rs integrates with [Axum](https://github.com/tokio-rs/axum) for request vali
 
 ```toml
 [dependencies]
-zod-rs = { version = "0.4", features = ["axum"] }
+zod-rs = { version = "1.0", features = ["axum"] }
 axum = "0.7"
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }

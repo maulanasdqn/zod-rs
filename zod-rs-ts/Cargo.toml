@@ -28,6 +28,7 @@ required-features = ["cli"]
 [features]
 default = []
 cli = ["dep:clap", "dep:walkdir", "dep:regex"]
+zod-v3 = []
 
 [dependencies.clap]
 version = "4.0"

@@ -11,9 +11,9 @@ Add the dependency:
 
 ```toml
 [dependencies]
-zod-rs = { version = "0.4", features = ["ts"] }
+zod-rs = { version = "1.0", features = ["ts"] }
 # Or use the standalone crate
-zod-rs-ts = "0.4"
+zod-rs-ts = "1.0"
 ```
 
 ## Basic usage
@@ -49,7 +49,7 @@ fn main() {
 The above generates:
 
 ```typescript
-import { z } from 'zod';
+import * as z from "zod";
 
 export const UserSchema = z.object({
   username: z.string().min(2).max(50),
@@ -60,6 +60,25 @@ export const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>;
 ```
+
+## Zod version
+
+The generator targets **Zod v4** by default, which uses a namespace import (`import * as z from "zod"`). To emit legacy Zod v3 imports (`import { z } from 'zod'`), enable the `zod-v3` feature:
+
+```toml
+[dependencies]
+zod-rs = { version = "...", features = ["ts", "zod-v3"] }
+# or, directly:
+zod-rs-ts = { version = "...", features = ["zod-v3"] }
+```
+
+The field/validator output is identical across both versions — only the import statement changes.
+
+## Standard Schema compatibility
+
+Generated schemas are [Standard Schema](https://github.com/standard-schema/standard-schema) compliant out of the box. This is provided by Zod itself: every Zod v3.24+ and Zod v4 schema implements the `~standard` interface natively.
+
+That means the generated output works directly with any Standard Schema consumer — TanStack Form, React Hook Form, and other validation-library-agnostic tooling — with no adapter code.
 
 ## Type mapping
 
