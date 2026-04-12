@@ -26,22 +26,22 @@ pub fn derive_zod_schema(input: TokenStream) -> TokenStream {
                                 #(#field_validations)*
                         }
 
-                        pub fn validate_and_parse(value: &serde_json::Value) -> Result<Self, zod_rs_util::ValidationResult> {
+                        pub fn validate_and_parse(value: &serde_json::Value) -> Result<Self, ::zod_rs::__private::ValidationResult> {
                             match Self::schema().validate(value) {
                                 Ok(_) => {
                                     serde_json::from_value(value.clone())
-                                        .map_err(|e| zod_rs_util::ValidationError::custom(format!("Deserialization failed: {}", e)).into())
+                                        .map_err(|e| ::zod_rs::__private::ValidationError::custom(format!("Deserialization failed: {}", e)).into())
                                 }
                                 Err(validation_result) => Err(validation_result)
                             }
                         }
 
-                        pub fn from_json(json_str: &str) -> Result<Self, zod_rs_util::ParseError> {
+                        pub fn from_json(json_str: &str) -> Result<Self, ::zod_rs::__private::ParseError> {
                             let value: serde_json::Value = serde_json::from_str(json_str)?;
                             Ok(Self::validate_and_parse(&value)?)
                         }
 
-                        pub fn validate_json(json_str: &str) -> Result<serde_json::Value, zod_rs_util::ParseError> {
+                        pub fn validate_json(json_str: &str) -> Result<serde_json::Value, ::zod_rs::__private::ParseError> {
                             let value: serde_json::Value = serde_json::from_str(json_str)?;
                             Self::schema().validate(&value)?;
                             Ok(value)
@@ -473,22 +473,22 @@ fn generate_enum_schema(name: &syn::Ident, data_enum: &syn::DataEnum) -> TokenSt
                     #(#variant_schemas)*
             }
 
-            pub fn validate_and_parse(value: &serde_json::Value) -> Result<Self, zod_rs_util::ValidationResult> {
+            pub fn validate_and_parse(value: &serde_json::Value) -> Result<Self, ::zod_rs::__private::ValidationResult> {
                 match Self::schema().validate(value) {
                     Ok(_) => {
                         serde_json::from_value(value.clone())
-                            .map_err(|e| zod_rs_util::ValidationError::custom(format!("Deserialization failed: {}", e)).into())
+                            .map_err(|e| ::zod_rs::__private::ValidationError::custom(format!("Deserialization failed: {}", e)).into())
                     }
                     Err(validation_result) => Err(validation_result)
                 }
             }
 
-            pub fn from_json(json_str: &str) -> Result<Self, zod_rs_util::ParseError> {
+            pub fn from_json(json_str: &str) -> Result<Self, ::zod_rs::__private::ParseError> {
                 let value: serde_json::Value = serde_json::from_str(json_str)?;
                 Ok(Self::validate_and_parse(&value)?)
             }
 
-            pub fn validate_json(json_str: &str) -> Result<serde_json::Value, zod_rs_util::ParseError> {
+            pub fn validate_json(json_str: &str) -> Result<serde_json::Value, ::zod_rs::__private::ParseError> {
                 let value: serde_json::Value = serde_json::from_str(json_str)?;
                 Self::schema().validate(&value)?;
                 Ok(value)
