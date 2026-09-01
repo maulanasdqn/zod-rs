@@ -671,7 +671,7 @@ The `ZodSchema` derive macro generates the following methods:
 
 ### Enum Support
 
-zod-rs fully supports Rust enums with the `ZodSchema` derive macro. Enums are validated using the externally-tagged format (serde default).
+zod-rs fully supports Rust enums with the `ZodSchema` derive macro. Enums are validated using the externally-tagged format (serde default): unit variants are plain strings, and variants with data are single-key tagged objects. `#[serde(rename)]` and `#[serde(rename_all)]` are honored.
 
 ```rust
 use serde::{Deserialize, Serialize};
@@ -710,8 +710,8 @@ enum ApiResponse {
 }
 
 fn main() {
-    // Unit variant: {"Active": null}
-    let status = json!({"Active": null});
+    // Unit variant: "Active"
+    let status = json!("Active");
     assert!(Status::validate_and_parse(&status).is_ok());
 
     // Tuple variant (single): {"Text": "hello"}
@@ -732,10 +732,12 @@ fn main() {
 
 | Variant Type | Rust | JSON |
 |-------------|------|------|
-| Unit | `Status::Active` | `{"Active": null}` |
+| Unit | `Status::Active` | `"Active"` |
 | Tuple (single) | `Message::Text("hi")` | `{"Text": "hi"}` |
 | Tuple (multiple) | `Message::Coords(1, 2)` | `{"Coords": [1, 2]}` |
 | Struct | `Event::Click { x: 1, y: 2 }` | `{"Click": {"x": 1, "y": 2}}` |
+
+The legacy `{"Active": null}` form is still accepted for unit variants, matching serde's deserialization behavior.
 
 ### TypeScript Zod Schema Generation
 
@@ -829,8 +831,8 @@ fn main() {
 
 ```typescript
 export const StatusSchema = z.union([
-  z.object({ Active: z.null() }),
-  z.object({ Inactive: z.null() })
+  z.literal("Active"),
+  z.literal("Inactive")
 ]);
 
 export const EventSchema = z.union([

@@ -66,12 +66,9 @@ pub fn derive_zod_schema(input: TokenStream) -> TokenStream {
                 TokenStream::from(error.to_compile_error())
             }
         },
-        Data::Enum(data_enum) => generate_enum_schema(name, data_enum),
+        Data::Enum(data_enum) => generate_enum_schema(name, &input.attrs, data_enum),
         Data::Union(_) => {
-            let error = syn::Error::new_spanned(
-                &input,
-                "ZodSchema cannot be derived for unions",
-            );
+            let error = syn::Error::new_spanned(&input, "ZodSchema cannot be derived for unions");
             TokenStream::from(error.to_compile_error())
         }
     }
@@ -458,10 +455,16 @@ fn get_option_inner_type(ty: &syn::Type) -> syn::Type {
     syn::parse_quote! { String }
 }
 
-fn generate_enum_schema(name: &syn::Ident, data_enum: &syn::DataEnum) -> TokenStream {
+fn generate_enum_schema(
+    name: &syn::Ident,
+    attrs: &[Attribute],
+    data_enum: &syn::DataEnum,
+) -> TokenStream {
+    let rename_all = parse_serde_name(attrs, "rename_all");
+
     let variant_schemas = data_enum.variants.iter().map(|variant| {
-        let variant_name = &variant.ident;
-        let variant_name_str = variant_name.to_string();
+        let variant_name_str =
+            effective_variant_name(&variant.ident, &variant.attrs, rename_all.as_deref());
 
         generate_variant_schema(&variant_name_str, &variant.fields)
     });
@@ -499,11 +502,104 @@ fn generate_enum_schema(name: &syn::Ident, data_enum: &syn::DataEnum) -> TokenSt
     TokenStream::from(expanded)
 }
 
+fn effective_variant_name(
+    ident: &syn::Ident,
+    attrs: &[Attribute],
+    rename_all: Option<&str>,
+) -> String {
+    if let Some(renamed) = parse_serde_name(attrs, "rename") {
+        return renamed;
+    }
+    let name = ident.to_string();
+    match rename_all {
+        Some(rule) => apply_rename_rule(rule, &name),
+        None => name,
+    }
+}
+
+fn parse_serde_name(attrs: &[Attribute], key: &str) -> Option<String> {
+    let mut result = None;
+
+    for attr in attrs {
+        if !attr.path().is_ident("serde") {
+            continue;
+        }
+
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident(key) {
+                if meta.input.peek(syn::Token![=]) {
+                    let lit: syn::LitStr = meta.value()?.parse()?;
+                    result = Some(lit.value());
+                } else if meta.input.peek(syn::token::Paren) {
+                    let mut serialize = None;
+                    let mut deserialize = None;
+                    meta.parse_nested_meta(|inner| {
+                        let lit: syn::LitStr = inner.value()?.parse()?;
+                        if inner.path.is_ident("deserialize") {
+                            deserialize = Some(lit.value());
+                        } else if inner.path.is_ident("serialize") {
+                            serialize = Some(lit.value());
+                        }
+                        Ok(())
+                    })?;
+                    if let Some(name) = deserialize.or(serialize) {
+                        result = Some(name);
+                    }
+                }
+            } else {
+                skip_serde_meta_value(&meta)?;
+            }
+            Ok(())
+        });
+    }
+
+    result
+}
+
+fn skip_serde_meta_value(meta: &syn::meta::ParseNestedMeta) -> syn::Result<()> {
+    if meta.input.peek(syn::Token![=]) {
+        let _: syn::Expr = meta.value()?.parse()?;
+    } else if meta.input.peek(syn::token::Paren) {
+        meta.parse_nested_meta(|inner| skip_serde_meta_value(&inner))?;
+    }
+    Ok(())
+}
+
+fn apply_rename_rule(rule: &str, variant: &str) -> String {
+    match rule {
+        "lowercase" => variant.to_ascii_lowercase(),
+        "UPPERCASE" => variant.to_ascii_uppercase(),
+        "camelCase" => {
+            let mut chars = variant.chars();
+            match chars.next() {
+                Some(first) => first.to_ascii_lowercase().to_string() + chars.as_str(),
+                None => String::new(),
+            }
+        }
+        "snake_case" => {
+            let mut snake = String::new();
+            for (i, ch) in variant.char_indices() {
+                if i > 0 && ch.is_uppercase() {
+                    snake.push('_');
+                }
+                snake.push(ch.to_ascii_lowercase());
+            }
+            snake
+        }
+        "SCREAMING_SNAKE_CASE" => apply_rename_rule("snake_case", variant).to_ascii_uppercase(),
+        "kebab-case" => apply_rename_rule("snake_case", variant).replace('_', "-"),
+        "SCREAMING-KEBAB-CASE" => {
+            apply_rename_rule("SCREAMING_SNAKE_CASE", variant).replace('_', "-")
+        }
+        _ => variant.to_string(),
+    }
+}
+
 fn generate_variant_schema(variant_name: &str, fields: &Fields) -> proc_macro2::TokenStream {
     match fields {
-        // Unit variant: {"VariantName": null}
         Fields::Unit => {
             quote! {
+                .variant(zod_rs::literal_value(#variant_name))
                 .variant(
                     zod_rs::object()
                         .field(#variant_name, zod_rs::null())
@@ -517,9 +613,7 @@ fn generate_variant_schema(variant_name: &str, fields: &Fields) -> proc_macro2::
         }
 
         // Struct variant (named fields): {"VariantName": {"field1": ..., "field2": ...}}
-        Fields::Named(fields_named) => {
-            generate_struct_variant_schema(variant_name, fields_named)
-        }
+        Fields::Named(fields_named) => generate_struct_variant_schema(variant_name, fields_named),
     }
 }
 

@@ -59,6 +59,37 @@ pub fn literal<T: Clone + PartialEq + std::fmt::Debug>(value: T) -> LiteralSchem
     LiteralSchema::new(value)
 }
 
+#[derive(Debug, Clone)]
+pub struct LiteralValueSchema {
+    expected: String,
+}
+
+impl LiteralValueSchema {
+    pub fn new(expected: impl Into<String>) -> Self {
+        Self {
+            expected: expected.into(),
+        }
+    }
+}
+
+impl Schema<Value> for LiteralValueSchema {
+    fn validate(&self, value: &Value) -> ValidateResult<Value> {
+        match value.as_str() {
+            Some(s) if s == self.expected => Ok(value.clone()),
+            Some(_) => Err(ValidationError::invalid_value(&self.expected).into()),
+            None => Err(ValidationError::invalid_type(
+                ValidationType::String,
+                ValidationType::from(value),
+            )
+            .into()),
+        }
+    }
+}
+
+pub fn literal_value(expected: impl Into<String>) -> LiteralValueSchema {
+    LiteralValueSchema::new(expected)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

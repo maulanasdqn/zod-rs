@@ -19,7 +19,7 @@ enum Status {
     Pending,
 }
 
-let status = json!({"Active": null});
+let status = json!("Active");
 assert!(Status::validate_and_parse(&status).is_ok());
 ```
 

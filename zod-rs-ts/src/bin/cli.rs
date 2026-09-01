@@ -199,10 +199,7 @@ fn generate_struct_schema(
                 let parts: Vec<&str> = trimmed.split(':').collect();
                 if parts.len() >= 2 {
                     let field_name = parts[0].trim().trim_start_matches("pub ");
-                    let field_type = parts[1]
-                        .trim()
-                        .trim_end_matches(',')
-                        .trim();
+                    let field_type = parts[1].trim().trim_end_matches(',').trim();
 
                     let zod_type = rust_type_to_zod_simple(field_type, &current_attrs);
                     fields.push(format!("  {}: {}", field_name, zod_type));
@@ -272,15 +269,12 @@ fn generate_enum_schema(
                 if !variant_name.is_empty() {
                     if trimmed.contains('(') {
                         // Tuple variant
-                        if let Some(inner) = trimmed
-                            .split('(')
-                            .nth(1)
-                            .and_then(|s| s.split(')').next())
+                        if let Some(inner) =
+                            trimmed.split('(').nth(1).and_then(|s| s.split(')').next())
                         {
                             let types: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
                             if types.len() == 1 {
-                                let zod_type =
-                                    rust_type_to_zod_simple(types[0], &[]);
+                                let zod_type = rust_type_to_zod_simple(types[0], &[]);
                                 variants.push(format!(
                                     "z.object({{ {}: {} }})",
                                     variant_name, zod_type
@@ -305,7 +299,7 @@ fn generate_enum_schema(
                         ));
                     } else {
                         // Unit variant
-                        variants.push(format!("z.object({{ {}: z.null() }})", variant_name));
+                        variants.push(format!("z.literal(\"{}\")", variant_name));
                     }
                 }
             }

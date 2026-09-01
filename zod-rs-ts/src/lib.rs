@@ -76,11 +76,16 @@ export type {} = z.infer<typeof {}>;"#,
             }
         },
         Data::Enum(data_enum) => {
+            let rename_all = parse_serde_name(&input.attrs, "rename_all");
             let variant_schemas: Vec<String> = data_enum
                 .variants
                 .iter()
                 .map(|variant| {
-                    let variant_name = variant.ident.to_string();
+                    let variant_name = effective_variant_name(
+                        &variant.ident,
+                        &variant.attrs,
+                        rename_all.as_deref(),
+                    );
                     generate_variant_ts(&variant_name, &variant.fields)
                 })
                 .collect();
@@ -110,17 +115,129 @@ export type {} = z.infer<typeof {}>;"#,
             TokenStream::from(expanded)
         }
         Data::Union(_) => {
-            let error =
-                syn::Error::new_spanned(&input, "ZodTs cannot be derived for Rust unions");
+            let error = syn::Error::new_spanned(&input, "ZodTs cannot be derived for Rust unions");
             TokenStream::from(error.to_compile_error())
         }
+    }
+}
+
+fn effective_variant_name(
+    ident: &syn::Ident,
+    attrs: &[Attribute],
+    rename_all: Option<&str>,
+) -> String {
+    if let Some(renamed) = parse_serde_name(attrs, "rename") {
+        return renamed;
+    }
+    let name = ident.to_string();
+    match rename_all {
+        Some(rule) => apply_rename_rule(rule, &name),
+        None => name,
+    }
+}
+
+fn parse_serde_name(attrs: &[Attribute], key: &str) -> Option<String> {
+    let mut result = None;
+
+    for attr in attrs {
+        if !attr.path().is_ident("serde") {
+            continue;
+        }
+
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident(key) {
+                if meta.input.peek(syn::Token![=]) {
+                    let lit: syn::LitStr = meta.value()?.parse()?;
+                    result = Some(lit.value());
+                } else if meta.input.peek(syn::token::Paren) {
+                    let mut serialize = None;
+                    let mut deserialize = None;
+                    meta.parse_nested_meta(|inner| {
+                        let lit: syn::LitStr = inner.value()?.parse()?;
+                        if inner.path.is_ident("deserialize") {
+                            deserialize = Some(lit.value());
+                        } else if inner.path.is_ident("serialize") {
+                            serialize = Some(lit.value());
+                        }
+                        Ok(())
+                    })?;
+                    if let Some(name) = deserialize.or(serialize) {
+                        result = Some(name);
+                    }
+                }
+            } else {
+                skip_serde_meta_value(&meta)?;
+            }
+            Ok(())
+        });
+    }
+
+    result
+}
+
+fn skip_serde_meta_value(meta: &syn::meta::ParseNestedMeta) -> syn::Result<()> {
+    if meta.input.peek(syn::Token![=]) {
+        let _: syn::Expr = meta.value()?.parse()?;
+    } else if meta.input.peek(syn::token::Paren) {
+        meta.parse_nested_meta(|inner| skip_serde_meta_value(&inner))?;
+    }
+    Ok(())
+}
+
+fn apply_rename_rule(rule: &str, variant: &str) -> String {
+    match rule {
+        "lowercase" => variant.to_ascii_lowercase(),
+        "UPPERCASE" => variant.to_ascii_uppercase(),
+        "camelCase" => {
+            let mut chars = variant.chars();
+            match chars.next() {
+                Some(first) => first.to_ascii_lowercase().to_string() + chars.as_str(),
+                None => String::new(),
+            }
+        }
+        "snake_case" => {
+            let mut snake = String::new();
+            for (i, ch) in variant.char_indices() {
+                if i > 0 && ch.is_uppercase() {
+                    snake.push('_');
+                }
+                snake.push(ch.to_ascii_lowercase());
+            }
+            snake
+        }
+        "SCREAMING_SNAKE_CASE" => apply_rename_rule("snake_case", variant).to_ascii_uppercase(),
+        "kebab-case" => apply_rename_rule("snake_case", variant).replace('_', "-"),
+        "SCREAMING-KEBAB-CASE" => {
+            apply_rename_rule("SCREAMING_SNAKE_CASE", variant).replace('_', "-")
+        }
+        _ => variant.to_string(),
+    }
+}
+
+fn ts_object_key(name: &str) -> String {
+    let is_valid_ident = !name.is_empty()
+        && name
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphabetic() || c == '_' || c == '$')
+        && name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$');
+
+    if is_valid_ident {
+        name.to_string()
+    } else {
+        format!("\"{}\"", name.replace('\\', "\\\\").replace('"', "\\\""))
     }
 }
 
 fn generate_variant_ts(variant_name: &str, fields: &Fields) -> String {
     match fields {
         Fields::Unit => {
-            format!("z.object({{ {}: z.null() }})", variant_name)
+            format!(
+                "z.literal(\"{}\")",
+                variant_name.replace('\\', "\\\\").replace('"', "\\\"")
+            )
         }
         Fields::Unnamed(fields_unnamed) => {
             let field_count = fields_unnamed.unnamed.len();
@@ -129,7 +246,11 @@ fn generate_variant_ts(variant_name: &str, fields: &Fields) -> String {
                 let field_type = type_to_string(&field.ty);
                 let attrs = parse_zod_attributes(&field.attrs);
                 let zod_type = rust_type_to_zod(&field_type, &attrs);
-                format!("z.object({{ {}: {} }})", variant_name, zod_type)
+                format!(
+                    "z.object({{ {}: {} }})",
+                    ts_object_key(variant_name),
+                    zod_type
+                )
             } else {
                 let element_types: Vec<String> = fields_unnamed
                     .unnamed
@@ -141,7 +262,11 @@ fn generate_variant_ts(variant_name: &str, fields: &Fields) -> String {
                     })
                     .collect();
                 let tuple_str = element_types.join(", ");
-                format!("z.object({{ {}: z.tuple([{}]) }})", variant_name, tuple_str)
+                format!(
+                    "z.object({{ {}: z.tuple([{}]) }})",
+                    ts_object_key(variant_name),
+                    tuple_str
+                )
             }
         }
         Fields::Named(fields_named) => {
@@ -173,7 +298,8 @@ fn generate_variant_ts(variant_name: &str, fields: &Fields) -> String {
             let fields_str = field_schemas.join(", ");
             format!(
                 "z.object({{ {}: z.object({{ {} }}) }})",
-                variant_name, fields_str
+                ts_object_key(variant_name),
+                fields_str
             )
         }
     }
