@@ -10,9 +10,9 @@ pub mod __private {
 
 pub mod prelude {
     pub use crate::schema::{
-        array, boolean, literal, null, number, object, optional, string, tuple, union,
-        ArraySchema, BooleanSchema, LiteralSchema, NullSchema, NumberSchema, ObjectSchema,
-        OptionalSchema, Schema, StringSchema, TupleSchema, UnionSchema,
+        array, boolean, literal, literal_value, null, number, object, optional, string, tuple,
+        union, ArraySchema, BooleanSchema, LiteralSchema, LiteralValueSchema, NullSchema,
+        NumberSchema, ObjectSchema, OptionalSchema, Schema, StringSchema, TupleSchema, UnionSchema,
     };
     pub use serde_json::Value;
     #[cfg(feature = "macros")]

@@ -93,7 +93,7 @@ struct Phone {
 
 // ==================== ENUM EXAMPLES ====================
 
-/// Unit variants only - maps to tagged null values
+/// Unit variants only - validated as plain strings
 #[derive(Debug, Clone, Serialize, Deserialize, ZodSchema, PartialEq)]
 enum Status {
     Active,
@@ -429,25 +429,22 @@ mod tests {
 
     #[test]
     fn test_unit_variant_enum() {
-        // Valid unit variants
-        let active = json!({"Active": null});
+        let active = json!("Active");
         let result = Status::validate_and_parse(&active);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), Status::Active);
 
-        let inactive = json!({"Inactive": null});
+        let inactive = json!("Inactive");
         assert!(Status::validate_and_parse(&inactive).is_ok());
 
-        let pending = json!({"Pending": null});
+        let pending = json!("Pending");
         assert!(Status::validate_and_parse(&pending).is_ok());
 
-        // Invalid: unknown variant
-        let unknown = json!({"Unknown": null});
-        assert!(Status::validate_and_parse(&unknown).is_err());
+        let legacy = json!({"Active": null});
+        assert!(Status::validate_and_parse(&legacy).is_ok());
 
-        // Invalid: wrong format (string instead of object)
-        let wrong_format = json!("Active");
-        assert!(Status::validate_and_parse(&wrong_format).is_err());
+        let unknown = json!("Unknown");
+        assert!(Status::validate_and_parse(&unknown).is_err());
     }
 
     #[test]
@@ -474,7 +471,7 @@ mod tests {
     #[test]
     fn test_multi_tuple_variant_enum() {
         // Unit variant within mixed enum
-        let point = json!({"Point": null});
+        let point = json!("Point");
         let result = Shape::validate_and_parse(&point);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), Shape::Point);
@@ -515,7 +512,13 @@ mod tests {
         let resize = json!({"Resize": {"width": 800, "height": 600}});
         let result = Event::validate_and_parse(&resize);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Event::Resize { width: 800, height: 600 });
+        assert_eq!(
+            result.unwrap(),
+            Event::Resize {
+                width: 800,
+                height: 600
+            }
+        );
 
         // Invalid: missing field
         let missing = json!({"Click": {"x": 100}});
@@ -529,7 +532,7 @@ mod tests {
     #[test]
     fn test_mixed_variant_enum() {
         // Unit variant
-        let success = json!({"Success": null});
+        let success = json!("Success");
         assert_eq!(
             ApiResponse::validate_and_parse(&success).unwrap(),
             ApiResponse::Success
@@ -555,7 +558,7 @@ mod tests {
 
     #[test]
     fn test_enum_from_json() {
-        let json_str = r#"{"Active": null}"#;
+        let json_str = r#""Active""#;
         let result = Status::from_json(json_str);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), Status::Active);

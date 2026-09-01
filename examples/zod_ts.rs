@@ -79,9 +79,9 @@ mod tests {
     fn test_status_zod_ts() {
         let ts = Status::zod_ts();
         assert!(ts.contains("z.union(["));
-        assert!(ts.contains("z.object({ Active: z.null() })"));
-        assert!(ts.contains("z.object({ Inactive: z.null() })"));
-        assert!(ts.contains("z.object({ Pending: z.null() })"));
+        assert!(ts.contains("z.literal(\"Active\")"));
+        assert!(ts.contains("z.literal(\"Inactive\")"));
+        assert!(ts.contains("z.literal(\"Pending\")"));
     }
 
     #[test]

@@ -27,8 +27,8 @@ Generated TypeScript:
 import * as z from "zod";
 
 export const StatusSchema = z.union([
-  z.object({ Active: z.null() }),
-  z.object({ Inactive: z.null() })
+  z.literal("Active"),
+  z.literal("Inactive")
 ]);
 ```
 
