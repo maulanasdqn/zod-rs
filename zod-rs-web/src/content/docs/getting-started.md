@@ -128,7 +128,12 @@ The project is organized as a Cargo workspace:
 
 ## Next steps
 
-- Learn about [primitive types](/primitives/string/)
-- Explore [complex types](/complex-types/object/)
-- Set up [derive macros](/derive-macros/zod-schema/)
-- Generate [TypeScript schemas](/typescript-codegen/zod-ts/)
+- Learn about primitive types: [string](/primitives/string/), [number](/primitives/number/), [boolean](/primitives/boolean/), [literal](/primitives/literal/), [null](/primitives/null/)
+- Explore complex types: [object](/complex-types/object/), [array](/complex-types/array/), [optional](/complex-types/optional/), [union](/complex-types/union/), [tuple](/complex-types/tuple/)
+- Set up [derive macros](/derive-macros/zod-schema/) and see the [attributes reference](/derive-macros/attributes/)
+- Validate [enums](/enums/overview/) with unit, tuple, and struct variants
+- Generate [TypeScript schemas](/typescript-codegen/zod-ts/) from your Rust types
+- Handle [validation errors](/advanced/error-handling/) with full-path reporting
+- [Validate JSON in Rust](/guides/validate-json/) — hands-on guide
+- [Validate structs in Rust](/guides/validate-structs/) — derive-based validation
+- [Validate API requests](/guides/api-validation/) — Axum integration guide

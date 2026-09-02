@@ -94,3 +94,10 @@ That means the generated output works directly with any Standard Schema consumer
 ## Validation attributes
 
 The same `#[zod(...)]` attributes used with `ZodSchema` are translated to TypeScript Zod methods. See the [attributes reference](/derive-macros/attributes/) for the full list.
+
+## See also
+
+- [Enum Codegen](/typescript-codegen/enum-codegen/) — generate TypeScript Zod unions from Rust enums
+- [CLI Tool](/typescript-codegen/cli/) — batch-generate TypeScript schemas from Rust source files
+- [Share Validation Between Rust and TypeScript](/guides/fullstack-validation/) — end-to-end guide for fullstack validation
+- [MCP Server](/integrations/mcp/) — connect AI assistants to zod-rs documentation

@@ -113,6 +113,10 @@ export default defineConfig({
 					label: 'Guides',
 					items: [
 						{ label: 'Validate JSON', slug: 'guides/validate-json' },
+						{ label: 'Validate Structs', slug: 'guides/validate-structs' },
+						{ label: 'Input Validation', slug: 'guides/input-validation' },
+						{ label: 'API & Form Validation', slug: 'guides/api-validation' },
+						{ label: 'Fullstack Validation', slug: 'guides/fullstack-validation' },
 					],
 				},
 				{

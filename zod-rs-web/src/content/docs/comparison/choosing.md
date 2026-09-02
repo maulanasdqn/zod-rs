@@ -1,6 +1,33 @@
 ---
 title: Choosing a Rust Validation Library
 description: An honest comparison of the best Rust validation libraries - zod-rs, validator, and garde - and how to pick the right one for your project.
+head:
+  - tag: script
+    attrs:
+      type: application/ld+json
+    content: |
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What are the best Rust validation libraries?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The three main Rust validation libraries are zod-rs (runtime schema-based validation of raw JSON), validator (attribute-based validation of deserialized structs, 4M+ monthly downloads), and garde (a modern rewrite of validator with context-aware rules). Choose based on whether you validate raw JSON at a boundary (zod-rs) or check already-typed structs (validator or garde)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Should I use validator or garde for Rust validation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "If your data is already a typed Rust struct and you only need to check invariants, garde is the modern choice with better Option handling and built-in context-aware validation. validator remains fine if you are already using it. If your data arrives as JSON at an API boundary, consider zod-rs instead — it validates raw JSON, composes schemas at runtime, and generates TypeScript Zod schemas."
+            }
+          }
+        ]
+      }
 ---
 
 The Rust ecosystem has three main approaches to data validation. This page compares them honestly — including where zod-rs is *not* the right choice — so you can pick based on where validation happens in your program.

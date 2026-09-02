@@ -42,6 +42,22 @@ head:
               "@type": "Answer",
               "text": "Yes. The ZodTs derive macro and the zod-rs-ts CLI generate TypeScript Zod schemas from your Rust types, so the frontend and backend validate with the same rules."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I validate structs in Rust?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Add #[derive(ZodSchema)] to your struct and annotate fields with #[zod(email)], #[zod(min_length(3))], or other validation rules. Then call validate_and_parse() to validate JSON input and get a typed struct in one step, with full-path error messages for every failing field."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the best Rust validation library?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It depends on your use case. The validator crate and garde are best for checking structs you have already deserialized. zod-rs is best when validation starts at a boundary — API requests, config files, webhooks — because it validates raw JSON directly, composes schemas at runtime, generates TypeScript Zod schemas, and reports full-path errors."
+            }
           }
         ]
       }
@@ -110,13 +126,36 @@ fn main() {
 
 ## What is zod-rs?
 
-zod-rs is a Rust validation library inspired by [Zod](https://zod.dev) from the TypeScript ecosystem. It validates JSON at runtime — API request bodies, configuration files, webhook payloads, or any untrusted input — against schemas you compose from primitives like `string()`, `number()`, `object()`, and `array()`.
+**zod-rs is a Rust validation library** that validates data at runtime using composable schemas. You define rules with primitives like `string()`, `number()`, `object()`, and `array()`, compose them into complex schemas, and call `safe_parse()` to validate input — getting back either a typed struct or detailed errors with the full path to each failing field (e.g. `user.addresses[0].zip`).
 
-Unlike attribute-only validators, zod-rs schemas are values: you can build them at runtime, store them, compose them, and reuse them across your codebase. Validation and parsing happen in one step, and every error reports the full path to the failing field, such as `user.addresses[0].zip`.
+### How Rust validation works with zod-rs
 
-For struct-based workflows, `#[derive(ZodSchema)]` generates the schema from your type definition, honoring serde attributes like `#[serde(rename_all = "camelCase")]`. And with `#[derive(ZodTs)]`, zod-rs generates matching [TypeScript Zod schemas](/typescript-codegen/zod-ts/) so your frontend and backend validate with the same rules.
+1. **Define a schema** — use builder methods (`string().email().min(5)`) or derive it from a struct with `#[derive(ZodSchema)]`
+2. **Validate input** — call `safe_parse(&json_value)` or `validate_and_parse(&json_value)` to validate and deserialize in one step
+3. **Handle errors** — every error includes the full field path, a human-readable message, and i18n support
 
-New to validation in Rust? Start with the hands-on guide to [validating JSON in Rust](/guides/validate-json/), or see how zod-rs compares to [validator and garde](/comparison/choosing/).
+Unlike attribute-only validators such as [validator](https://crates.io/crates/validator) and [garde](https://crates.io/crates/garde), zod-rs schemas are values: you can build them at runtime, store them, compose them, and reuse them across your codebase. This makes zod-rs ideal for validating [API request bodies](/integrations/axum/), configuration files, webhook payloads, and any untrusted input where the schema may not be known at compile time.
+
+### What makes zod-rs different
+
+- **Validates raw JSON directly** — no need to deserialize first; parsing and validation happen in one step
+- **Runtime schema composition** — build, combine, and reuse schemas dynamically, not just at compile time
+- **Full-path error messages** — errors report the exact location of failures in nested data (`user.profile.email`)
+- **TypeScript codegen** — generate matching [TypeScript Zod schemas](/typescript-codegen/zod-ts/) from Rust types so frontend and backend validate with the same rules
+- **Built-in i18n** — [localize error messages](/advanced/i18n/) with built-in locale support
+- **Framework integration** — built-in [Axum support](/integrations/axum/) with structured error responses
+
+For a detailed comparison, see [Choosing a Rust Validation Library](/comparison/choosing/) or the migration guides from [validator](/comparison/vs-validator/) and [garde](/comparison/vs-garde/).
+
+### Getting started with Rust validation
+
+New to data validation in Rust? These guides cover the most common use cases:
+
+- [How to Validate JSON in Rust](/guides/validate-json/) — parse untrusted input and enforce business rules
+- [How to Validate Structs in Rust](/guides/validate-structs/) — derive validation from your type definitions
+- [Rust Input Validation Guide](/guides/input-validation/) — validate data at every boundary
+- [API and Form Validation in Rust](/guides/api-validation/) — validate HTTP requests in web applications
+- [Share Validation Between Rust and TypeScript](/guides/fullstack-validation/) — one schema, two languages
 
 ## Frequently asked questions
 
@@ -134,4 +173,12 @@ Yes. Enable the `axum` feature to validate request bodies with a zod-rs schema a
 
 ### Can I share validation rules between Rust and TypeScript?
 
-Yes. The `ZodTs` derive macro and the [zod-rs-ts CLI](/typescript-codegen/cli/) generate TypeScript Zod schemas from your Rust types, so the frontend and backend validate with the same rules.
+Yes. The `ZodTs` derive macro and the [zod-rs-ts CLI](/typescript-codegen/cli/) generate TypeScript Zod schemas from your Rust types, so the frontend and backend validate with the same rules. See the [fullstack validation guide](/guides/fullstack-validation/).
+
+### How do I validate structs in Rust?
+
+Add `#[derive(ZodSchema)]` to your struct and annotate fields with `#[zod(email)]`, `#[zod(min_length(3))]`, or other validation rules. Then call `validate_and_parse()` to validate JSON input and get a typed struct in one step, with full-path error messages for every failing field. See the [struct validation guide](/guides/validate-structs/) and the [attributes reference](/derive-macros/attributes/).
+
+### What is the best Rust validation library?
+
+It depends on your use case. The [validator](https://crates.io/crates/validator) crate and [garde](https://crates.io/crates/garde) are best for checking structs you have already deserialized. zod-rs is best when validation starts at a boundary — API requests, config files, webhooks — because it validates raw JSON directly, composes schemas at runtime, generates TypeScript Zod schemas, and reports full-path errors. See the [detailed comparison](/comparison/choosing/).

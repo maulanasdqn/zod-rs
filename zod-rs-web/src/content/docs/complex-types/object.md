@@ -88,3 +88,14 @@ let data = json!({
 
 assert!(user_schema().safe_parse(&data).is_ok());
 ```
+
+Errors from nested objects include the full field path — `address.zip` instead of just `zip`. See [Error Handling](/advanced/error-handling/) for the full error model.
+
+## See also
+
+- [Array validation](/complex-types/array/) — validate lists with element-level rules
+- [Optional values](/complex-types/optional/) — handle optional and nullable fields
+- [Union types](/complex-types/union/) — accept any of several schemas
+- [Tuple validation](/complex-types/tuple/) — fixed-length tuples with per-position schemas
+- [Nested structs](/derive-macros/nested-structs/) — automatic nested struct validation with derive macros
+- [How to Validate JSON in Rust](/guides/validate-json/) — end-to-end guide

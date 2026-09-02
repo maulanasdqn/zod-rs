@@ -77,3 +77,9 @@ enum ApiResponse {
     Error { code: i32, message: String },
 }
 ```
+
+## See also
+
+- [Enum JSON Format](/enums/json-format/) — how each variant type maps to JSON
+- [Enum TypeScript Codegen](/typescript-codegen/enum-codegen/) — generate TypeScript Zod unions from Rust enums
+- [ZodSchema Derive Macro](/derive-macros/zod-schema/) — derive validation schemas from structs and enums

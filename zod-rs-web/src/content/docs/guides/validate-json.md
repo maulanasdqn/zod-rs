@@ -114,3 +114,11 @@ See [Schema Composition](/advanced/schema-composition/) for structuring larger r
 ## Validating HTTP request bodies
 
 If the JSON arrives over HTTP, you usually want validation in the extractor layer rather than in every handler. The [Axum integration](/integrations/axum/) does exactly that with the `axum` feature flag — invalid bodies are rejected with structured errors before your handler runs.
+
+## See also
+
+- [How to Validate Structs in Rust](/guides/validate-structs/) — derive validation from type definitions
+- [Rust Input Validation Guide](/guides/input-validation/) — validate data at every application boundary
+- [API and Form Validation](/guides/api-validation/) — validate HTTP requests in Axum
+- [Share Validation Between Rust and TypeScript](/guides/fullstack-validation/) — one schema, two languages
+- [Choosing a Rust Validation Library](/comparison/choosing/) — how zod-rs compares to validator and garde

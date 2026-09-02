@@ -106,3 +106,14 @@ struct User {
     email: String,
 }
 ```
+
+See the [attributes reference](/derive-macros/attributes/) for every available validation rule.
+
+## See also
+
+- [Number validation](/primitives/number/) — min, max, integer, positive, finite
+- [Boolean validation](/primitives/boolean/) — true/false schema
+- [Literal validation](/primitives/literal/) — exact value matching
+- [Null validation](/primitives/null/) — JSON null schema
+- [Object validation](/complex-types/object/) — validate JSON objects with typed fields
+- [Input validation guide](/guides/input-validation/) — validate data at every boundary
