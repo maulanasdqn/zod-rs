@@ -6,6 +6,9 @@ import starlightLlmsTxt from 'starlight-llms-txt';
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://zod.rs',
+	build: {
+		inlineStylesheets: 'always',
+	},
 	integrations: [
 		starlight({
 			title: 'zod-rs',
