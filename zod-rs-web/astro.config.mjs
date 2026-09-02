@@ -110,6 +110,7 @@ export default defineConfig({
 					label: 'Integrations',
 					items: [
 						{ label: 'Axum', slug: 'integrations/axum' },
+						{ label: 'MCP Server', slug: 'integrations/mcp' },
 					],
 				},
 				{

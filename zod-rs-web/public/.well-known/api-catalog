@@ -2,6 +2,13 @@
   "linkset": [
     {
       "anchor": "https://zod.rs/",
+      "service-desc": [
+        {
+          "href": "https://zod.rs/.well-known/mcp/server-card.json",
+          "type": "application/json",
+          "title": "MCP server card for the zod-rs documentation server at https://mcp.zod.rs/mcp"
+        }
+      ],
       "service-doc": [
         {
           "href": "https://zod.rs/llms.txt",

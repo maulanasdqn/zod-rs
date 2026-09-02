@@ -1,0 +1,65 @@
+{
+  "version": "1.0.0",
+  "protocolVersion": "2025-06-18",
+  "serverInfo": {
+    "name": "zod-rs-docs",
+    "title": "zod-rs Documentation",
+    "version": "1.0.0"
+  },
+  "description": "Search and read the documentation for zod-rs, a Zod-inspired Rust validation library with composable schemas, derive macros, and TypeScript codegen.",
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "https://mcp.zod.rs/mcp"
+  },
+  "authentication": {
+    "required": false
+  },
+  "tools": [
+    {
+      "name": "search_docs",
+      "title": "Search the documentation",
+      "description": "Full-text search across the complete zod-rs documentation. Returns the most relevant sections as markdown.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search terms, e.g. 'email validation'"
+          },
+          "max_results": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 3,
+            "description": "Maximum number of sections to return"
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "get_page",
+      "title": "Get a documentation page",
+      "description": "Fetch one zod-rs documentation page as markdown. Pass a site-relative path from list_pages, e.g. /getting-started/ or /primitives/string/.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Site-relative page path, e.g. /primitives/string/"
+          }
+        },
+        "required": ["path"]
+      }
+    },
+    {
+      "name": "list_pages",
+      "title": "List documentation pages",
+      "description": "List all pages of the zod-rs documentation as site-relative paths usable with get_page.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}
