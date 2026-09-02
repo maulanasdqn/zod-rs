@@ -107,6 +107,12 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Guides',
+					items: [
+						{ label: 'Validate JSON', slug: 'guides/validate-json' },
+					],
+				},
+				{
 					label: 'Integrations',
 					items: [
 						{ label: 'Axum', slug: 'integrations/axum' },
@@ -124,7 +130,9 @@ export default defineConfig({
 				{
 					label: 'Comparison',
 					items: [
+						{ label: 'Choosing a Library', slug: 'comparison/choosing' },
 						{ label: 'vs Validator Crate', slug: 'comparison/vs-validator' },
+						{ label: 'vs Garde Crate', slug: 'comparison/vs-garde' },
 					],
 				},
 			],

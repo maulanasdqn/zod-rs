@@ -116,6 +116,8 @@ Unlike attribute-only validators, zod-rs schemas are values: you can build them 
 
 For struct-based workflows, `#[derive(ZodSchema)]` generates the schema from your type definition, honoring serde attributes like `#[serde(rename_all = "camelCase")]`. And with `#[derive(ZodTs)]`, zod-rs generates matching [TypeScript Zod schemas](/typescript-codegen/zod-ts/) so your frontend and backend validate with the same rules.
 
+New to validation in Rust? Start with the hands-on guide to [validating JSON in Rust](/guides/validate-json/), or see how zod-rs compares to [validator and garde](/comparison/choosing/).
+
 ## Frequently asked questions
 
 ### How is zod-rs different from the validator crate?

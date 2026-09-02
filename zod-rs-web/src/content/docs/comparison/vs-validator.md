@@ -3,6 +3,8 @@ title: zod-rs vs the validator Crate
 description: Compare zod-rs with the validator crate for Rust data validation, with a step-by-step migration guide.
 ---
 
+The [validator](https://github.com/Keats/validator) crate derives validation on structs you have already deserialized; zod-rs validates the JSON itself and hands you a typed struct in one step. For a wider look at the ecosystem, including garde, see [Choosing a Rust Validation Library](/comparison/choosing/).
+
 ## Feature comparison
 
 | Feature | zod-rs | validator |
