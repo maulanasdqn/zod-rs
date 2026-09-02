@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightLlmsTxt from 'starlight-llms-txt';
 
 // https://astro.build/config
 export default defineConfig({
@@ -8,6 +9,12 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'zod-rs',
+			plugins: [
+				starlightLlmsTxt({
+					description:
+						'A Zod-inspired Rust validation library with composable schemas, derive macros, detailed error messages, and TypeScript codegen.',
+				}),
+			],
 			description:
 				'zod-rs is a Zod-inspired Rust validation library with composable schemas, derive macros, detailed error messages, and TypeScript codegen.',
 			head: [
