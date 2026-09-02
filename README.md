@@ -10,6 +10,8 @@
 
 zod-rs is a TypeScript-first schema validation library with static type inference, inspired by [Zod](https://github.com/colinhacks/zod). It provides a simple and intuitive API for validating JSON data with comprehensive error reporting.
 
+Full documentation is available at [zod.rs](https://zod.rs).
+
 ## Features
 
 - **Type-safe validation** - Full type safety with compile-time guarantees

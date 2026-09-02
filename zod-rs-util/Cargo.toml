@@ -10,7 +10,7 @@ keywords.workspace = true
 categories.workspace = true
 readme = "../README.md"
 documentation = "https://docs.rs/zod-rs-util"
-homepage = "https://github.com/maulanasdqn/zod-rs"
+homepage = "https://zod.rs"
 
 [dependencies]
 serde_json.workspace = true

@@ -10,7 +10,7 @@ keywords = ["validation", "schema", "zod", "typescript", "codegen"]
 categories = ["development-tools", "parser-implementations"]
 readme = "../README.md"
 documentation = "https://docs.rs/zod-rs-ts"
-homepage = "https://github.com/maulanasdqn/zod-rs"
+homepage = "https://zod.rs"
 
 [lib]
 proc-macro = true
