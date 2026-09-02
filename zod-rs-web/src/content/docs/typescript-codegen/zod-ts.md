@@ -1,6 +1,6 @@
 ---
-title: ZodTs Derive
-description: Generate TypeScript Zod schemas from Rust types
+title: Generate TypeScript Zod Schemas from Rust
+description: Generate TypeScript Zod schemas from Rust types with the ZodTs derive macro to share validation between backend and frontend.
 ---
 
 The `ZodTs` derive macro generates TypeScript Zod schema code from Rust types, enabling shared validation between your Rust backend and TypeScript frontend.

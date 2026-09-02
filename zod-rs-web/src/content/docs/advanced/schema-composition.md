@@ -1,6 +1,6 @@
 ---
 title: Schema Composition
-description: Building complex schemas from reusable parts
+description: Compose reusable validation schemas in Rust by combining zod-rs primitives into complex rules.
 ---
 
 zod-rs schemas are composable — you can build complex validation rules by combining simpler schemas.

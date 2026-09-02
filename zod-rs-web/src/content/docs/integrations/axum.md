@@ -1,6 +1,6 @@
 ---
-title: Axum Integration
-description: Using zod-rs with the Axum web framework
+title: Axum Request Validation
+description: Validate Axum request bodies in Rust with zod-rs schemas and return structured validation errors from your handlers.
 ---
 
 zod-rs integrates with [Axum](https://github.com/tokio-rs/axum) for request validation in web APIs.

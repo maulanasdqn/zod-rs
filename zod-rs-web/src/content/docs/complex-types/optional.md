@@ -1,6 +1,6 @@
 ---
-title: Optional
-description: Optional value validation with zod-rs
+title: Optional Values
+description: Validate optional and nullable values in Rust with zod-rs optional schemas and Option<T> fields.
 ---
 
 Create an optional schema with `optional(schema)` or `.optional()`.

@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install zod-rs and write your first schema
+description: Install the zod-rs Rust validation library, choose feature flags, and write your first schema validation in minutes.
 ---
 
 ## Installation

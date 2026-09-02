@@ -1,6 +1,6 @@
 ---
 title: Enum Codegen
-description: TypeScript code generation for Rust enums
+description: Generate TypeScript Zod union schemas from Rust enums with the ZodTs derive macro.
 ---
 
 The `ZodTs` derive macro also supports enums, generating TypeScript Zod union schemas.

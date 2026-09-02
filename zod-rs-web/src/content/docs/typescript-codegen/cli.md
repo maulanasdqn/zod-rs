@@ -1,6 +1,6 @@
 ---
-title: CLI Tool
-description: Generate TypeScript Zod schemas from the command line
+title: TypeScript Codegen CLI
+description: Generate TypeScript Zod schemas from Rust source files in batch with the zod-rs-ts command line tool.
 ---
 
 The `zod-rs-ts` CLI tool generates TypeScript Zod schemas from Rust source files in batch.

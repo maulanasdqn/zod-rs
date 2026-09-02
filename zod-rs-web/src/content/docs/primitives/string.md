@@ -1,6 +1,6 @@
 ---
-title: String
-description: String schema validation with zod-rs
+title: String Validation
+description: Validate strings in Rust with zod-rs - min and max length, email, URL, regex patterns, prefix, suffix, and substring checks.
 ---
 
 Create a string schema with `string()`.

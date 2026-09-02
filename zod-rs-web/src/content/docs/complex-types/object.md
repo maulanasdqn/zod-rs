@@ -1,6 +1,6 @@
 ---
-title: Object
-description: Object schema validation with zod-rs
+title: Object Validation
+description: Validate JSON objects in Rust with zod-rs - typed fields, nested objects, and full-path error messages.
 ---
 
 Create an object schema with `object()`.

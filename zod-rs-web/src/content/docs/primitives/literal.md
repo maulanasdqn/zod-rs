@@ -1,6 +1,6 @@
 ---
-title: Literal
-description: Literal value validation with zod-rs
+title: Literal Validation
+description: Validate exact literal values in Rust with the zod-rs literal() schema.
 ---
 
 Create a literal schema with `literal(value)`. The value must match exactly.

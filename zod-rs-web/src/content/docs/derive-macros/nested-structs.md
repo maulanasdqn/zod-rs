@@ -1,6 +1,6 @@
 ---
 title: Nested Structs
-description: Using ZodSchema with nested struct types
+description: Validate nested Rust structs automatically with the ZodSchema derive macro.
 ---
 
 The `ZodSchema` derive macro automatically handles nested structs. When a field's type also derives `ZodSchema`, its schema is used for validation.

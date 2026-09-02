@@ -1,6 +1,6 @@
 ---
-title: Number
-description: Number schema validation with zod-rs
+title: Number Validation
+description: Validate numbers in Rust with zod-rs - range constraints, integer checks, positive and negative bounds, and finite values.
 ---
 
 Create a number schema with `number()`.

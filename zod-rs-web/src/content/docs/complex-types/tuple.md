@@ -1,6 +1,6 @@
 ---
-title: Tuple
-description: Tuple schema validation with zod-rs
+title: Tuple Validation
+description: Validate fixed-length tuples in Rust with zod-rs, with a specific schema for each position.
 ---
 
 Tuple schemas validate fixed-length arrays where each element has a specific type.

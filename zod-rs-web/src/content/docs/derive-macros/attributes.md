@@ -1,6 +1,6 @@
 ---
 title: Attributes Reference
-description: Complete reference for #[zod(...)] validation attributes
+description: Complete reference for #[zod(...)] validation attributes on Rust struct fields.
 ---
 
 The `#[zod(...)]` attribute configures validation constraints on struct fields.

@@ -1,6 +1,6 @@
 ---
-title: JSON Format
-description: JSON representation of Rust enum variants
+title: Enum JSON Format
+description: How Rust enum variants map to JSON in zod-rs, following serde's externally tagged format.
 ---
 
 zod-rs uses serde's default externally-tagged format for enums. Here's how each variant type maps to JSON.

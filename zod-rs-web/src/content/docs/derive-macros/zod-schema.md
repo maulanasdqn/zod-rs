@@ -1,6 +1,6 @@
 ---
-title: ZodSchema Derive
-description: Automatically generate validation schemas from Rust structs
+title: ZodSchema Derive Macro
+description: Derive validation schemas from Rust structs automatically with #[derive(ZodSchema)].
 ---
 
 The `ZodSchema` derive macro generates validation schemas from Rust structs, making it easy to validate JSON data and deserialize it in one step.

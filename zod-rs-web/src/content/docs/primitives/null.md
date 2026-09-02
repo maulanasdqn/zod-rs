@@ -1,6 +1,6 @@
 ---
-title: "Null"
-description: Null schema validation with zod-rs
+title: "Null Validation"
+description: Validate JSON null values in Rust with the zod-rs null schema.
 ---
 
 The null schema validates that a value is JSON `null`.

@@ -1,6 +1,6 @@
 ---
-title: Boolean
-description: Boolean schema validation with zod-rs
+title: Boolean Validation
+description: Validate boolean values in Rust with the zod-rs boolean() schema.
 ---
 
 Create a boolean schema with `boolean()`.

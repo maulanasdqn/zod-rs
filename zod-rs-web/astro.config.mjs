@@ -4,9 +4,41 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://zod.rs',
 	integrations: [
 		starlight({
 			title: 'zod-rs',
+			description:
+				'zod-rs is a Zod-inspired Rust validation library with composable schemas, derive macros, detailed error messages, and TypeScript codegen.',
+			head: [
+				{ tag: 'meta', attrs: { property: 'og:image', content: 'https://zod.rs/og.png' } },
+				{ tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+				{ tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+				{ tag: 'meta', attrs: { name: 'twitter:image', content: 'https://zod.rs/og.png' } },
+				{
+					tag: 'script',
+					attrs: { type: 'application/ld+json' },
+					content: JSON.stringify({
+						'@context': 'https://schema.org',
+						'@type': 'SoftwareApplication',
+						name: 'zod-rs',
+						applicationCategory: 'DeveloperApplication',
+						operatingSystem: 'Cross-platform',
+						url: 'https://zod.rs',
+						description:
+							'A Zod-inspired Rust validation library with composable schemas, derive macros, detailed error messages, and TypeScript codegen.',
+						programmingLanguage: 'Rust',
+						license: 'https://opensource.org/licenses/MIT',
+						offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+						sameAs: [
+							'https://github.com/maulanasdqn/zod-rs',
+							'https://crates.io/crates/zod-rs',
+							'https://docs.rs/zod-rs',
+						],
+					}),
+				},
+			],
+			lastUpdated: true,
 			logo: {
 				light: './src/assets/logo-light.svg',
 				dark: './src/assets/logo-dark.svg',

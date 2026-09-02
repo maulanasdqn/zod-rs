@@ -1,9 +1,53 @@
 ---
-title: zod-rs
-description: A Rust implementation inspired by Zod for schema validation
+title: Rust Validation Library
+description: zod-rs is a Zod-inspired Rust validation library. Validate JSON with composable schemas, derive macros, detailed errors, and TypeScript codegen.
 template: splash
+head:
+  - tag: script
+    attrs:
+      type: application/ld+json
+    content: |
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is zod-rs different from the validator crate?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The validator crate checks structs you have already deserialized. zod-rs validates raw JSON values directly, so parsing and validation happen in one step, schemas can be built and composed at runtime, and errors carry the full path to the failing field."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does zod-rs work with serde?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Schemas validate serde_json::Value, the derive macro honors #[serde(rename)] and #[serde(rename_all)], and enum validation matches serde's externally tagged JSON format."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I validate HTTP request bodies in Axum?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Enable the axum feature to validate request bodies with a zod-rs schema and return structured validation errors from your handlers."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I share validation rules between Rust and TypeScript?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The ZodTs derive macro and the zod-rs-ts CLI generate TypeScript Zod schemas from your Rust types, so the frontend and backend validate with the same rules."
+            }
+          }
+        ]
+      }
 hero:
-  tagline: TypeScript-first schema validation with static type inference, built for Rust
+  title: zod-rs
+  tagline: A Zod-inspired Rust validation library. Composable schemas, derive macros, detailed errors, and TypeScript codegen.
   actions:
     - text: Get Started
       link: /getting-started/
@@ -63,3 +107,29 @@ fn main() {
     }
 }
 ```
+
+## What is zod-rs?
+
+zod-rs is a Rust validation library inspired by [Zod](https://zod.dev) from the TypeScript ecosystem. It validates JSON at runtime — API request bodies, configuration files, webhook payloads, or any untrusted input — against schemas you compose from primitives like `string()`, `number()`, `object()`, and `array()`.
+
+Unlike attribute-only validators, zod-rs schemas are values: you can build them at runtime, store them, compose them, and reuse them across your codebase. Validation and parsing happen in one step, and every error reports the full path to the failing field, such as `user.addresses[0].zip`.
+
+For struct-based workflows, `#[derive(ZodSchema)]` generates the schema from your type definition, honoring serde attributes like `#[serde(rename_all = "camelCase")]`. And with `#[derive(ZodTs)]`, zod-rs generates matching [TypeScript Zod schemas](/typescript-codegen/zod-ts/) so your frontend and backend validate with the same rules.
+
+## Frequently asked questions
+
+### How is zod-rs different from the validator crate?
+
+The [validator](https://crates.io/crates/validator) crate checks structs you have already deserialized. zod-rs validates raw JSON values directly, so parsing and validation happen in one step, schemas can be built and composed at runtime, and errors carry the full path to the failing field. See the [full comparison and migration guide](/comparison/vs-validator/).
+
+### Does zod-rs work with serde?
+
+Yes. Schemas validate `serde_json::Value`, the derive macro honors `#[serde(rename)]` and `#[serde(rename_all)]`, and [enum validation](/enums/overview/) matches serde's externally tagged JSON format.
+
+### Can I validate HTTP request bodies in Axum?
+
+Yes. Enable the `axum` feature to validate request bodies with a zod-rs schema and return structured validation errors from your handlers. See the [Axum integration guide](/integrations/axum/).
+
+### Can I share validation rules between Rust and TypeScript?
+
+Yes. The `ZodTs` derive macro and the [zod-rs-ts CLI](/typescript-codegen/cli/) generate TypeScript Zod schemas from your Rust types, so the frontend and backend validate with the same rules.

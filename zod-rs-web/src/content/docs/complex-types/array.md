@@ -1,6 +1,6 @@
 ---
-title: Array
-description: Array schema validation with zod-rs
+title: Array Validation
+description: Validate JSON arrays in Rust with zod-rs - element schemas, min, max, and exact length constraints, and nested arrays.
 ---
 
 Create an array schema with `array(element_schema)`.

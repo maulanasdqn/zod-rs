@@ -1,6 +1,6 @@
 ---
-title: Enum Support
-description: Validating Rust enums with zod-rs
+title: Rust Enum Validation
+description: Validate Rust enums with zod-rs - unit, tuple, and struct variants in serde's externally tagged JSON format.
 ---
 
 zod-rs fully supports Rust enums with the `ZodSchema` derive macro. Enums use serde's default externally-tagged format.

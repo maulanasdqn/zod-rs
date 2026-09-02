@@ -1,6 +1,6 @@
 ---
-title: Union
-description: Union type validation with zod-rs
+title: Union Types
+description: Validate union types in Rust with zod-rs - accept any of several schemas for a single value.
 ---
 
 Create a union schema with `union()`.

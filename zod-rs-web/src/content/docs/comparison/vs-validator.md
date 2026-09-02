@@ -1,6 +1,6 @@
 ---
-title: vs Validator Crate
-description: Comparing zod-rs to the validator crate, with migration guide
+title: zod-rs vs the validator Crate
+description: Compare zod-rs with the validator crate for Rust data validation, with a step-by-step migration guide.
 ---
 
 ## Feature comparison

@@ -1,6 +1,6 @@
 ---
-title: Error Handling
-description: Understanding zod-rs validation errors
+title: Validation Error Handling
+description: Handle zod-rs validation errors in Rust - error types, messages, and full paths to failing fields in nested data.
 ---
 
 zod-rs provides detailed error information with full path tracking for nested structures.
