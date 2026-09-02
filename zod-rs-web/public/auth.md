@@ -1,4 +1,6 @@
-# Authentication
+# Auth.md
+
+## Authentication
 
 zod.rs is the public documentation site for the zod-rs Rust validation library. No authentication is required for anything on this site.
 
