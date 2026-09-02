@@ -1,0 +1,31 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://zod.rs/",
+      "service-doc": [
+        {
+          "href": "https://zod.rs/llms.txt",
+          "type": "text/markdown",
+          "title": "zod-rs documentation index for AI agents"
+        },
+        {
+          "href": "https://zod.rs/llms-full.txt",
+          "type": "text/plain",
+          "title": "Complete zod-rs documentation in one file"
+        }
+      ],
+      "service-meta": [
+        {
+          "href": "https://zod.rs/sitemap-index.xml",
+          "type": "application/xml",
+          "title": "Sitemap"
+        },
+        {
+          "href": "https://zod.rs/auth.md",
+          "type": "text/markdown",
+          "title": "Authentication policy (no authentication required)"
+        }
+      ]
+    }
+  ]
+}
